@@ -8,6 +8,7 @@ import {useAtomPreloader} from './atoms/useAtomPreloader';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useStyles} from './hooks/useStyles';
 import {Splash} from './screens/Splash';
+import {Settings} from './screens/Settings';
 
 const Stack = createNativeStackNavigator<MainStackParams>();
 
@@ -39,6 +40,7 @@ export const App: FC = () => {
           screenOptions={{headerShown: false}}>
           <Stack.Screen name={Screens.Splash} component={Splash} />
           <Stack.Screen name={Screens.Timer} component={Timer} />
+          <Stack.Screen name={Screens.Settings} component={Settings} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

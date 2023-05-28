@@ -10,9 +10,13 @@ import {FadeAnimatedText} from '../components/FadeAnimatedText';
 import {TextInput} from '../components/TextInput';
 import {TimerContext, useTimerContext} from '../hooks/useTimerContext';
 import {PlayButton} from '../components/PlayButton';
+import {MainStackScreenProps, Screens} from './types';
+import {IconButton} from '../components/IconButton';
 
-export const Timer: FC = () => {
-  const {textStyle} = useStyles();
+type Props = MainStackScreenProps<Screens.Timer>;
+
+export const Timer: FC<Props> = () => {
+  const {textStyle, isDarkMode, toggleDarkMode} = useStyles();
 
   const context = useTimerContext();
 
@@ -36,6 +40,18 @@ export const Timer: FC = () => {
     <TimerContext.Provider value={context}>
       <SafeAreaView style={styles.container}>
         <Animated.View style={styles.container} layout={layout}>
+          {stopped && (
+            <FadeAnimatedView layout={layout} style={styles.settingsContainer}>
+              <IconButton
+                onPress={toggleDarkMode}
+                source={
+                  isDarkMode
+                    ? require('../assets/icons/sun.png')
+                    : require('../assets/icons/moon.png')
+                }
+              />
+            </FadeAnimatedView>
+          )}
           {stopped && (
             <FadeAnimatedView layout={layout}>
               <TextInput
@@ -107,5 +123,10 @@ const styles = StyleSheet.create({
   textInput: {
     marginHorizontal: 16,
     marginBottom: 16,
+  },
+  settingsContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
 });

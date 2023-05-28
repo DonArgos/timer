@@ -1,9 +1,28 @@
-import {useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {useColorScheme, useWindowDimensions} from 'react-native';
 import {colors} from '../styles';
+import {useAtom} from 'jotai';
+import {DarkMode, darkModeAtom} from '../atoms/app';
 
 export const useStyles = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const colorScheme = useColorScheme();
+  const [darkMode, setDarkMode] = useAtom(darkModeAtom);
+  const isDarkMode = useMemo(
+    () =>
+      darkMode === DarkMode.UNSPECIFIED
+        ? colorScheme === 'dark'
+        : darkMode === DarkMode.TRUE,
+    [colorScheme, darkMode],
+  );
+
+  const toggleDarkMode = useCallback(() => {
+    if (isDarkMode) {
+      setDarkMode(DarkMode.FALSE);
+    } else {
+      setDarkMode(DarkMode.TRUE);
+    }
+  }, [isDarkMode, setDarkMode]);
+
   const {width, height} = useWindowDimensions();
 
   const backgroundStyle = useMemo(
@@ -48,5 +67,6 @@ export const useStyles = () => {
     secondaryColor,
     width,
     height,
+    toggleDarkMode,
   };
 };
