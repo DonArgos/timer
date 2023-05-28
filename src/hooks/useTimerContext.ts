@@ -37,16 +37,16 @@ export const useTimerContext = () => {
   const [running, setRunning] = useState(false);
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
   const [duration, setDuration] = useState(globalDuration);
-  const [workSeconds, setWorkSeconds] = useAtom(workDurationAtom);
-  const [restSeconds, setRestSeconds] = useAtom(restDurationAtom);
+  const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
+  const [restDuration, setRestDuration] = useAtom(restDurationAtom);
   const [durationText, setDurationText] = useState(
     (globalDuration / 1000 / 60).toString(),
   );
-  const [workText, setWorkText] = useState(workSeconds.toString());
-  const [restText, setRestText] = useState(restSeconds.toString());
+  const [workText, setWorkText] = useState((workDuration / 1000).toString());
+  const [restText, setRestText] = useState((restDuration / 1000).toString());
   const iconSize = useSharedValue(1);
 
-  const timeRef = useRef(workSeconds);
+  const timeRef = useRef(workDuration);
   const working = useRef(true);
   const previousRunning = useRef(true);
 
@@ -56,20 +56,24 @@ export const useTimerContext = () => {
     return [formatNumbers(_minutes), formatNumbers(_seconds)];
   }, [duration]);
 
-  const timer = useMemo(() => {
+  const [timer, timerPercentage] = useMemo(() => {
     if (!running || running !== previousRunning.current) {
       previousRunning.current = running;
-      return formatNumbers(timeRef.current);
+      const time = timeRef.current / 1000;
+      return [Math.floor(time), 1];
     }
-    if (timeRef.current === 0) {
+    if (timeRef.current <= 0) {
       working.current = !working.current;
-      timeRef.current = (working.current ? workSeconds : restSeconds) - 1;
+      timeRef.current =
+        (working.current ? workDuration : restDuration) - msPerRender;
     } else {
-      timeRef.current = timeRef.current - 1;
+      timeRef.current = timeRef.current - msPerRender;
     }
-    return formatNumbers(timeRef.current);
+    const time = timeRef.current / 1000;
+    const totalDuration = working.current ? workDuration : restDuration;
+    return [Math.floor(time), timeRef.current / totalDuration];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restSeconds, workSeconds, seconds, running]);
+  }, [restDuration, workDuration, duration, running]);
 
   const pause = useCallback(() => {
     setStopped(value => {
@@ -89,11 +93,13 @@ export const useTimerContext = () => {
       (durationText.length ? Number.parseInt(durationText, 10) : 0) * 1000 * 60;
     setGlobalDuration(_duration);
     setDuration(_duration);
-    setWorkSeconds(workText.length ? Number.parseInt(workText, 10) : 0);
-    setRestSeconds(restText.length ? Number.parseInt(restText, 10) : 0);
+    setWorkDuration(workText.length ? Number.parseInt(workText, 10) * 1000 : 0);
+    setRestDuration(restText.length ? Number.parseInt(restText, 10) * 1000 : 0);
     setStopped(value => {
       if (value) {
-        timeRef.current = workText.length ? Number.parseInt(workText, 10) : 0;
+        timeRef.current = workText.length
+          ? Number.parseInt(workText, 10) * 1000
+          : 0;
         iconSize.value = withTiming(0, {
           duration: 200,
           easing: Easing.linear,
@@ -107,8 +113,8 @@ export const useTimerContext = () => {
     iconSize,
     restText,
     setGlobalDuration,
-    setRestSeconds,
-    setWorkSeconds,
+    setRestDuration,
+    setWorkDuration,
     workText,
   ]);
 
@@ -144,19 +150,19 @@ export const useTimerContext = () => {
   }, [pause, running, setDuration]);
 
   const onReset = useCallback(() => {
-    timeRef.current = workSeconds;
+    timeRef.current = workDuration;
     previousRunning.current = !previousRunning.current;
     setDuration(globalDuration);
     setRunning(true);
-  }, [globalDuration, workSeconds]);
+  }, [globalDuration, workDuration]);
 
   const onStop = useCallback(() => {
-    timeRef.current = workSeconds;
+    timeRef.current = workDuration;
     iconSize.value = withTiming(1, {duration: 300, easing: Easing.linear});
     setStopped(true);
     setRunning(false);
     setDuration(globalDuration);
-  }, [globalDuration, iconSize, workSeconds]);
+  }, [globalDuration, iconSize, workDuration]);
 
   const animatedProps = useAnimatedProps(() => ({
     width: interpolate(iconSize.value, [0, 1], [24, 96]),
@@ -201,5 +207,6 @@ export const useTimerContext = () => {
     duration,
     timeRef,
     working,
+    timerPercentage,
   };
 };

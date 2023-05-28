@@ -8,16 +8,16 @@ export const globalDurationAtom = atomWithStorage(
   getStorage(),
 );
 
-// 30 seconds default
+// 30000 miliseconds -> 30 seconds default
 export const workDurationAtom = atomWithStorage(
   'work-duration',
-  30,
+  30000,
   getStorage(),
 );
 
-// 10 seconds default
+// 10000 miliseconds -> 10 seconds default
 export const restDurationAtom = atomWithStorage(
   'rest-duration',
-  10,
+  10000,
   getStorage(),
 );
