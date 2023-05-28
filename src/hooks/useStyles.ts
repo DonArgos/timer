@@ -33,11 +33,17 @@ export const useStyles = () => {
     [isDarkMode],
   );
 
+  const secondaryColor = useMemo(
+    () => (isDarkMode ? colors.grayText : colors.gray),
+    [isDarkMode],
+  );
+
   return {
     isDarkMode,
     backgroundStyle,
     textStyle,
     borderStyle,
     tintStyle,
+    secondaryColor,
   };
 };

@@ -1,6 +1,4 @@
 import Animated from 'react-native-reanimated';
-import Svg, {SvgProps} from 'react-native-svg';
-
-export const AnimatedSvg = Animated.createAnimatedComponent(Svg);
+import {SvgProps} from 'react-native-svg';
 
 export type AnimatedProps = Animated.AnimateProps<SvgProps>;

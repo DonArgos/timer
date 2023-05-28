@@ -1,7 +1,8 @@
 import React, {FC} from 'react';
 import {Path} from 'react-native-svg';
 import {useStyles} from '../../hooks/useStyles';
-import {AnimatedProps, AnimatedSvg} from './types';
+import {AnimatedProps} from './types';
+import {AnimatedSvg} from '../../components/Animated';
 
 export const Pause: FC<AnimatedProps> = props => {
   const {borderStyle} = useStyles();

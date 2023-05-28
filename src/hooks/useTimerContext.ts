@@ -71,10 +71,66 @@ export const useTimerContext = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restSeconds, workSeconds, seconds, running]);
 
+  const pause = useCallback(() => {
+    setStopped(value => {
+      if (value) {
+        iconSize.value = withTiming(0, {
+          duration: 200,
+          easing: Easing.linear,
+        });
+      }
+      return false;
+    });
+    setRunning(value => !value);
+  }, [iconSize]);
+
+  const play = useCallback(() => {
+    const _duration =
+      (durationText.length ? Number.parseInt(durationText, 10) : 0) * 1000 * 60;
+    setGlobalDuration(_duration);
+    setDuration(_duration);
+    setWorkSeconds(workText.length ? Number.parseInt(workText, 10) : 0);
+    setRestSeconds(restText.length ? Number.parseInt(restText, 10) : 0);
+    setStopped(value => {
+      if (value) {
+        timeRef.current = workText.length ? Number.parseInt(workText, 10) : 0;
+        iconSize.value = withTiming(0, {
+          duration: 200,
+          easing: Easing.linear,
+        });
+      }
+      return false;
+    });
+    setRunning(value => !value);
+  }, [
+    durationText,
+    iconSize,
+    restText,
+    setGlobalDuration,
+    setRestSeconds,
+    setWorkSeconds,
+    workText,
+  ]);
+
+  const onPlay = useCallback(() => {
+    if (stopped) {
+      play();
+    } else {
+      pause();
+    }
+  }, [pause, play, stopped]);
+
   useEffect(() => {
     if (running) {
       interval.current = setInterval(() => {
-        setDuration(value => value - msPerRender);
+        setDuration(value => {
+          const newValue = value - msPerRender;
+          if (newValue <= 0) {
+            pause();
+            return 0;
+          }
+          return newValue;
+        });
       }, msPerRender);
     } else if (interval.current) {
       clearInterval(interval.current);
@@ -85,12 +141,13 @@ export const useTimerContext = () => {
         clearInterval(interval.current);
       }
     };
-  }, [running, setDuration]);
+  }, [pause, running, setDuration]);
 
   const onReset = useCallback(() => {
     timeRef.current = workSeconds;
     previousRunning.current = !previousRunning.current;
     setDuration(globalDuration);
+    setRunning(true);
   }, [globalDuration, workSeconds]);
 
   const onStop = useCallback(() => {
@@ -123,50 +180,6 @@ export const useTimerContext = () => {
     ],
   }));
 
-  const onPlay = useCallback(() => {
-    if (stopped) {
-      const _duration =
-        (durationText.length ? Number.parseInt(durationText, 10) : 0) *
-        1000 *
-        60;
-      setGlobalDuration(_duration);
-      setDuration(_duration);
-      setWorkSeconds(workText.length ? Number.parseInt(workText, 10) : 0);
-      setRestSeconds(restText.length ? Number.parseInt(restText, 10) : 0);
-      setStopped(value => {
-        if (value) {
-          timeRef.current = workText.length ? Number.parseInt(workText, 10) : 0;
-          iconSize.value = withTiming(0, {
-            duration: 200,
-            easing: Easing.linear,
-          });
-        }
-        return false;
-      });
-      setRunning(value => !value);
-      return;
-    }
-    setStopped(value => {
-      if (value) {
-        iconSize.value = withTiming(0, {
-          duration: 200,
-          easing: Easing.linear,
-        });
-      }
-      return false;
-    });
-    setRunning(value => !value);
-  }, [
-    durationText,
-    iconSize,
-    restText,
-    setGlobalDuration,
-    setRestSeconds,
-    setWorkSeconds,
-    stopped,
-    workText,
-  ]);
-
   return {
     stopped,
     durationText,
@@ -185,5 +198,8 @@ export const useTimerContext = () => {
     running,
     onReset,
     onStop,
+    duration,
+    timeRef,
+    working,
   };
 };
