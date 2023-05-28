@@ -1,9 +1,10 @@
 import {useMemo} from 'react';
-import {useColorScheme} from 'react-native';
+import {useColorScheme, useWindowDimensions} from 'react-native';
 import {colors} from '../styles';
 
 export const useStyles = () => {
   const isDarkMode = useColorScheme() === 'dark';
+  const {width, height} = useWindowDimensions();
 
   const backgroundStyle = useMemo(
     () => ({
@@ -45,5 +46,7 @@ export const useStyles = () => {
     borderStyle,
     tintStyle,
     secondaryColor,
+    width,
+    height,
   };
 };

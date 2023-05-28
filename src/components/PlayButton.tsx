@@ -1,4 +1,4 @@
-import React, {FC, useContext} from 'react';
+import React, {FC, useContext, useMemo} from 'react';
 import Animated, {Layout} from 'react-native-reanimated';
 import {StyleProp, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
 import {useStyles} from '../hooks/useStyles';
@@ -15,10 +15,11 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-const SIZE = 298;
+const LARGE_BORDER_WIDTH = 18;
+const SMALL_BORDER_WIDTH = 12;
 
 export const PlayButton: FC<Props> = ({layout, style}) => {
-  const {backgroundStyle, textStyle} = useStyles();
+  const {backgroundStyle, textStyle, width} = useStyles();
   const globalDuration = useAtomValue(globalDurationAtom);
   const {
     stopped,
@@ -32,17 +33,29 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
     timerPercentage,
   } = useContext(TimerContext) || {};
 
+  const largeSize = useMemo(() => width - 32 - LARGE_BORDER_WIDTH, [width]);
+
+  const smallSize = useMemo(
+    () => largeSize - 32 - SMALL_BORDER_WIDTH * 2 - LARGE_BORDER_WIDTH,
+    [largeSize],
+  );
+
   return (
     <Animated.View layout={layout} style={styles.container}>
       <TouchableOpacity
-        style={[styles.button, style]}
+        style={[styles.button, {width: largeSize, height: largeSize}, style]}
         onPress={onPlay}
         disabled={(duration || 0) <= 0}>
         <ProgressCircle
-          size={298}
+          size={largeSize}
           percentage={(duration || 0) / globalDuration}
+          borderWidth={LARGE_BORDER_WIDTH}
         />
-        <ProgressCircle size={250} percentage={timerPercentage || 0} />
+        <ProgressCircle
+          size={smallSize}
+          percentage={timerPercentage || 0}
+          borderWidth={SMALL_BORDER_WIDTH}
+        />
         {!stopped && (
           <FadeAnimatedText style={[styles.text, textStyle]} layout={layout}>
             {timer}
@@ -72,8 +85,6 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: 'center',
-    height: SIZE,
-    width: SIZE,
     alignItems: 'center',
     justifyContent: 'center',
   },

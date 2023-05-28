@@ -8,14 +8,16 @@ import {useAnimatedProps, useDerivedValue} from 'react-native-reanimated';
 type Props = {
   size: number;
   percentage: number;
+  borderWidth: number;
 };
 
-const STROKE_WIDTH = 8;
-
-export const ProgressCircle: FC<Props> = ({size, percentage}) => {
+export const ProgressCircle: FC<Props> = ({size, percentage, borderWidth}) => {
   const {borderStyle, secondaryColor} = useStyles();
   const radius = useMemo(() => size / 2, [size]);
-  const innerRadius = useMemo(() => radius - STROKE_WIDTH / 2, [radius]);
+  const innerRadius = useMemo(
+    () => radius - borderWidth / 2,
+    [borderWidth, radius],
+  );
   const circumference = useMemo(() => 2 * Math.PI * innerRadius, [innerRadius]);
 
   const theta = useDerivedValue(() => 2 * Math.PI * percentage, [percentage]);
@@ -31,12 +33,13 @@ export const ProgressCircle: FC<Props> = ({size, percentage}) => {
       <View>
         <View
           style={[
-            styles.circle,
+            StyleSheet.absoluteFillObject,
             {
               height: size,
               width: size,
               borderRadius: radius,
               borderColor: secondaryColor,
+              borderWidth,
             },
           ]}
         />
@@ -49,7 +52,7 @@ export const ProgressCircle: FC<Props> = ({size, percentage}) => {
             r={innerRadius}
             stroke={borderStyle.borderColor}
             strokeDasharray={`${circumference} ${circumference}`}
-            strokeWidth={STROKE_WIDTH}
+            strokeWidth={borderWidth}
             strokeLinecap="round"
           />
         </Svg>
@@ -68,9 +71,5 @@ const styles = StyleSheet.create({
         rotate: '270deg',
       },
     ],
-  },
-  circle: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 8,
   },
 });
