@@ -47,7 +47,9 @@ export const useTimerContext = () => {
   const iconSize = useSharedValue(1);
 
   const timeRef = useRef(workDuration);
-  const working = useRef(true);
+  const secondsRef = useRef(workDuration / 1000);
+  const secondsWorking = useRef(true);
+  const percentageWorking = useRef(true);
   const previousRunning = useRef(true);
 
   const [minutes, seconds] = useMemo(() => {
@@ -56,24 +58,44 @@ export const useTimerContext = () => {
     return [formatNumbers(_minutes), formatNumbers(_seconds)];
   }, [duration]);
 
-  const [timer, timerPercentage] = useMemo(() => {
+  const timer = useMemo(() => {
     if (!running || running !== previousRunning.current) {
       previousRunning.current = running;
-      const time = timeRef.current / 1000;
-      return [Math.floor(time), 1];
+      return secondsRef.current;
+    }
+    if (secondsRef.current === 0) {
+      secondsWorking.current = !secondsWorking.current;
+      secondsRef.current =
+        (secondsWorking.current ? workDuration : restDuration) / 1000 - 1;
+    } else {
+      secondsRef.current = secondsRef.current - 1;
+    }
+    return secondsRef.current;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, seconds]);
+
+  const timerPercentage = useMemo(() => {
+    if (stopped) {
+      return 1;
+    }
+    if (!running || running !== previousRunning.current) {
+      const totalDuration = percentageWorking.current
+        ? workDuration
+        : restDuration;
+      return timeRef.current / totalDuration;
     }
     if (timeRef.current <= 0) {
-      working.current = !working.current;
-      timeRef.current =
-        (working.current ? workDuration : restDuration) - msPerRender;
+      percentageWorking.current = !percentageWorking.current;
+      timeRef.current = percentageWorking.current ? workDuration : restDuration;
     } else {
       timeRef.current = timeRef.current - msPerRender;
     }
-    const time = timeRef.current / 1000;
-    const totalDuration = working.current ? workDuration : restDuration;
-    return [Math.floor(time), timeRef.current / totalDuration];
+    const totalDuration = percentageWorking.current
+      ? workDuration
+      : restDuration;
+    return timeRef.current / totalDuration;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restDuration, workDuration, duration, running]);
+  }, [restDuration, workDuration, duration, running, stopped]);
 
   const pause = useCallback(() => {
     setStopped(value => {
@@ -149,20 +171,27 @@ export const useTimerContext = () => {
     };
   }, [pause, running, setDuration]);
 
-  const onReset = useCallback(() => {
+  const resetValues = useCallback(() => {
     timeRef.current = workDuration;
+    secondsRef.current = workDuration / 1000;
+    percentageWorking.current = true;
+    secondsWorking.current = true;
+  }, [workDuration]);
+
+  const onReset = useCallback(() => {
+    resetValues();
     previousRunning.current = !previousRunning.current;
     setDuration(globalDuration);
     setRunning(true);
-  }, [globalDuration, workDuration]);
+  }, [globalDuration, resetValues]);
 
   const onStop = useCallback(() => {
-    timeRef.current = workDuration;
+    resetValues();
     iconSize.value = withTiming(1, {duration: 300, easing: Easing.linear});
     setStopped(true);
     setRunning(false);
     setDuration(globalDuration);
-  }, [globalDuration, iconSize, workDuration]);
+  }, [globalDuration, iconSize, resetValues]);
 
   const animatedProps = useAnimatedProps(() => ({
     width: interpolate(iconSize.value, [0, 1], [24, 96]),
@@ -205,8 +234,6 @@ export const useTimerContext = () => {
     onReset,
     onStop,
     duration,
-    timeRef,
-    working,
     timerPercentage,
   };
 };
