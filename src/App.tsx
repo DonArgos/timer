@@ -9,6 +9,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useStyles} from './hooks/useStyles';
 import {Splash} from './screens/Splash';
 import {Settings} from './screens/Settings';
+import {RootSiblingParent} from 'react-native-root-siblings';
 
 const Stack = createNativeStackNavigator<MainStackParams>();
 
@@ -18,32 +19,34 @@ export const App: FC = () => {
   useAtomPreloader();
 
   return (
-    <SafeAreaView style={[style.container, backgroundStyle]}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <NavigationContainer
-        theme={{
-          dark: isDarkMode,
-          colors: {
-            background: backgroundStyle.backgroundColor,
-            border: borderStyle.borderColor,
-            card: backgroundStyle.backgroundColor,
-            notification: backgroundStyle.backgroundColor,
-            primary: textStyle.color,
-            text: textStyle.color,
-          },
-        }}>
-        <Stack.Navigator
-          initialRouteName={Screens.Splash}
-          screenOptions={{headerShown: false}}>
-          <Stack.Screen name={Screens.Splash} component={Splash} />
-          <Stack.Screen name={Screens.Timer} component={Timer} />
-          <Stack.Screen name={Screens.Settings} component={Settings} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaView>
+    <RootSiblingParent>
+      <SafeAreaView style={[style.container, backgroundStyle]}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        <NavigationContainer
+          theme={{
+            dark: isDarkMode,
+            colors: {
+              background: backgroundStyle.backgroundColor,
+              border: borderStyle.borderColor,
+              card: backgroundStyle.backgroundColor,
+              notification: backgroundStyle.backgroundColor,
+              primary: textStyle.color,
+              text: textStyle.color,
+            },
+          }}>
+          <Stack.Navigator
+            initialRouteName={Screens.Splash}
+            screenOptions={{headerShown: false}}>
+            <Stack.Screen name={Screens.Splash} component={Splash} />
+            <Stack.Screen name={Screens.Timer} component={Timer} />
+            <Stack.Screen name={Screens.Settings} component={Settings} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </RootSiblingParent>
   );
 };
 

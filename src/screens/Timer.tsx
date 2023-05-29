@@ -1,12 +1,16 @@
 import React, {FC, useMemo} from 'react';
-import {Keyboard, StyleSheet, TouchableWithoutFeedback} from 'react-native';
+import {
+  Keyboard,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+} from 'react-native';
 
 import Animated, {Layout} from 'react-native-reanimated';
 import {useStyles} from '../hooks/useStyles';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {TextButton} from '../components/TextButton';
 import {FadeAnimatedView} from '../components/FadeAnimatedView';
-import {FadeAnimatedText} from '../components/FadeAnimatedText';
 import {TimerContext, useTimerContext} from '../hooks/useTimerContext';
 import {PlayButton} from '../components/PlayButton';
 import {MainStackScreenProps, Screens} from './types';
@@ -20,9 +24,25 @@ export const Timer: FC<Props> = () => {
 
   const context = useTimerContext();
 
-  const {stopped, minutes, seconds, onReset, onStop} = context;
+  const {stopped, hours, minutes, seconds, onReset, onStop} = context;
 
   const layout = useMemo(() => new Layout(), []);
+
+  const minutesText = useMemo(() => {
+    const _hours = Number.parseInt(hours, 10);
+    if (_hours > 0) {
+      return hours;
+    }
+    return minutes;
+  }, [hours, minutes]);
+
+  const secondsText = useMemo(() => {
+    const _hours = Number.parseInt(hours, 10);
+    if (_hours > 0) {
+      return minutes;
+    }
+    return seconds;
+  }, [hours, minutes, seconds]);
 
   return (
     <TimerContext.Provider value={context}>
@@ -46,11 +66,11 @@ export const Timer: FC<Props> = () => {
                 <DurationsForm layout={layout} />
               </>
             ) : (
-              <FadeAnimatedText
-                style={[styles.time, textStyle]}
-                layout={layout}>
-                {minutes}:{seconds}
-              </FadeAnimatedText>
+              <FadeAnimatedView layout={layout} style={styles.timeContainer}>
+                <Text style={[styles.minutes, textStyle]}>{minutesText}</Text>
+                <Text style={[styles.colon, textStyle]}>:</Text>
+                <Text style={[styles.seconds, textStyle]}>{secondsText}</Text>
+              </FadeAnimatedView>
             )}
             <PlayButton layout={layout} />
             {!stopped && (
@@ -75,12 +95,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  time: {
-    fontSize: 70,
+  timeContainer: {
     marginBottom: 16,
     alignSelf: 'center',
-    textAlign: 'center',
     width: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  minutes: {
+    flex: 1,
+    fontSize: 70,
+    textAlign: 'right',
+  },
+  colon: {
+    fontSize: 70,
+    marginHorizontal: 4,
+    marginBottom: 8,
+  },
+  seconds: {
+    flex: 1,
+    fontSize: 70,
+    textAlign: 'left',
   },
   reset: {
     marginTop: 32,

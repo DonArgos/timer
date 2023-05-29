@@ -1,4 +1,4 @@
-import {useAtom} from 'jotai';
+import {useAtom, useAtomValue} from 'jotai';
 import {
   createContext,
   useCallback,
@@ -21,6 +21,12 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import {formatNumbers} from '../utils';
+import {Durations, durationsSchema} from '../models/durations';
+import Toast from 'react-native-root-toast';
+import {Keyboard} from 'react-native';
+import {globalTimeModeAtom} from '../atoms/timer';
+import {workTimeModeAtom} from '../atoms/timer';
+import {restTimeModeAtom} from '../atoms/timer';
 
 // 60 fps
 const msPerRender = 1000 / 60;
@@ -33,29 +39,69 @@ export const TimerContext = createContext<TimerContextValues | undefined>(
 
 export const useTimerContext = () => {
   const interval = useRef<number>();
+
   const [stopped, setStopped] = useState(true);
   const [running, setRunning] = useState(false);
+
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
-  const [duration, setDuration] = useState(globalDuration);
   const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
   const [restDuration, setRestDuration] = useAtom(restDurationAtom);
-  const [durationText, setDurationText] = useState(
-    (globalDuration / 1000 / 60).toString(),
-  );
-  const [workText, setWorkText] = useState((workDuration / 1000).toString());
-  const [restText, setRestText] = useState((restDuration / 1000).toString());
+
+  const globalTimeMode = useAtomValue(globalTimeModeAtom);
+  const workTimeMode = useAtomValue(workTimeModeAtom);
+  const restTimeMode = useAtomValue(restTimeModeAtom);
+  const [duration, setDuration] = useState(globalDuration);
+
+  const [durationText, setDurationText] = useState(() => {
+    if (globalTimeMode === 'minutes') {
+      return (globalDuration / 1000 / 60).toString();
+    }
+    return (globalDuration / 1000 / 60 / 60).toString();
+  });
+  const [workText, setWorkText] = useState(() => {
+    if (workTimeMode === 'seconds') {
+      return (workDuration / 1000).toString();
+    }
+    return (workDuration / 1000 / 60).toString();
+  });
+  const [restText, setRestText] = useState(() => {
+    if (restTimeMode === 'seconds') {
+      return (restDuration / 1000).toString();
+    }
+    return (restDuration / 1000 / 60).toString();
+  });
+
   const iconSize = useSharedValue(1);
 
+  const workDivisor = useMemo(() => {
+    if (workTimeMode === 'seconds') {
+      return 1000;
+    }
+    return 1000 / 60;
+  }, [workTimeMode]);
+
+  const restDivisor = useMemo(() => {
+    if (restTimeMode === 'seconds') {
+      return 1000;
+    }
+    return 1000 / 60;
+  }, [restTimeMode]);
+
   const timeRef = useRef(workDuration);
-  const secondsRef = useRef(workDuration / 1000);
+  const secondsRef = useRef(workDuration / workDivisor);
   const secondsWorking = useRef(true);
   const percentageWorking = useRef(true);
   const previousRunning = useRef(true);
 
-  const [minutes, seconds] = useMemo(() => {
-    const _minutes = Math.floor(duration / 1000 / 60);
+  const [hours, minutes, seconds] = useMemo(() => {
+    const _hours = Math.floor(duration / 1000 / 60 / 60);
+    const _minutes = Math.floor((duration / 1000 / 60) % 60);
     const _seconds = Math.floor((duration / 1000) % 60);
-    return [formatNumbers(_minutes), formatNumbers(_seconds)];
+    return [
+      formatNumbers(_hours),
+      formatNumbers(_minutes),
+      formatNumbers(_seconds),
+    ];
   }, [duration]);
 
   const timer = useMemo(() => {
@@ -66,13 +112,15 @@ export const useTimerContext = () => {
     if (secondsRef.current === 0) {
       secondsWorking.current = !secondsWorking.current;
       secondsRef.current =
-        (secondsWorking.current ? workDuration : restDuration) / 1000 - 1;
+        (secondsWorking.current
+          ? workDuration / workDivisor
+          : restDuration / restDivisor) - 1;
     } else {
       secondsRef.current = secondsRef.current - 1;
     }
     return secondsRef.current;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, seconds]);
+  }, [running, seconds, workDivisor, restDivisor]);
 
   const timerPercentage = useMemo(() => {
     if (stopped) {
@@ -110,18 +158,49 @@ export const useTimerContext = () => {
     setRunning(value => !value);
   }, [iconSize]);
 
+  const globalMultiplier = useMemo(() => {
+    if (globalTimeMode === 'minutes') {
+      return 1000 * 60;
+    }
+    return 1000 * 60 * 60;
+  }, [globalTimeMode]);
+
+  const workMultiplier = useMemo(() => {
+    if (workTimeMode === 'seconds') {
+      return 1000;
+    }
+    return 1000 * 60;
+  }, [workTimeMode]);
+
+  const restMultiplier = useMemo(() => {
+    if (restTimeMode === 'seconds') {
+      return 1000;
+    }
+    return 1000 * 60;
+  }, [restTimeMode]);
+
   const play = useCallback(() => {
-    const _duration =
-      (durationText.length ? Number.parseInt(durationText, 10) : 0) * 1000 * 60;
+    Keyboard.dismiss();
+    const data: Durations = {
+      global: Number.parseInt(durationText, 10),
+      work: Number.parseInt(workText, 10),
+      rest: Number.parseInt(restText, 10),
+    };
+    const result = durationsSchema.safeParse(data);
+
+    if (!result.success) {
+      Toast.show(result.error.errors[0].message);
+      return;
+    }
+
+    const _duration = result.data.global * globalMultiplier;
     setGlobalDuration(_duration);
     setDuration(_duration);
-    setWorkDuration(workText.length ? Number.parseInt(workText, 10) * 1000 : 0);
-    setRestDuration(restText.length ? Number.parseInt(restText, 10) * 1000 : 0);
+    setWorkDuration(result.data.work * workMultiplier);
+    setRestDuration(result.data.rest * restMultiplier);
     setStopped(value => {
       if (value) {
-        timeRef.current = workText.length
-          ? Number.parseInt(workText, 10) * 1000
-          : 0;
+        timeRef.current = result.data.work * workMultiplier;
         iconSize.value = withTiming(0, {
           duration: 200,
           easing: Easing.linear,
@@ -132,11 +211,14 @@ export const useTimerContext = () => {
     setRunning(value => !value);
   }, [
     durationText,
+    globalMultiplier,
     iconSize,
+    restMultiplier,
     restText,
     setGlobalDuration,
     setRestDuration,
     setWorkDuration,
+    workMultiplier,
     workText,
   ]);
 
@@ -173,10 +255,10 @@ export const useTimerContext = () => {
 
   const resetValues = useCallback(() => {
     timeRef.current = workDuration;
-    secondsRef.current = workDuration / 1000;
+    secondsRef.current = workDuration / workDivisor;
     percentageWorking.current = true;
     secondsWorking.current = true;
-  }, [workDuration]);
+  }, [workDivisor, workDuration]);
 
   const onReset = useCallback(() => {
     resetValues();
@@ -223,6 +305,7 @@ export const useTimerContext = () => {
     setWorkText,
     restText,
     setRestText,
+    hours,
     minutes,
     seconds,
     onPlay,
