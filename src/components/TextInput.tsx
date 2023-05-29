@@ -20,6 +20,8 @@ export const TextInput: FC<Props> = ({placeholder, style, ...props}) => {
       )}
       <TextInputBase
         style={[styles.textInput, textStyle, borderStyle]}
+        cursorColor={borderStyle.borderColor}
+        selectionColor={borderStyle.borderColor}
         {...props}
       />
     </View>

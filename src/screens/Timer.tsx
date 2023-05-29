@@ -1,5 +1,5 @@
 import React, {FC, useMemo} from 'react';
-import {StyleSheet} from 'react-native';
+import {Keyboard, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 
 import Animated, {Layout} from 'react-native-reanimated';
 import {useStyles} from '../hooks/useStyles';
@@ -7,11 +7,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {TextButton} from '../components/TextButton';
 import {FadeAnimatedView} from '../components/FadeAnimatedView';
 import {FadeAnimatedText} from '../components/FadeAnimatedText';
-import {TextInput} from '../components/TextInput';
 import {TimerContext, useTimerContext} from '../hooks/useTimerContext';
 import {PlayButton} from '../components/PlayButton';
 import {MainStackScreenProps, Screens} from './types';
 import {IconButton} from '../components/IconButton';
+import {DurationsForm} from '../components/DurationsForm';
 
 type Props = MainStackScreenProps<Screens.Timer>;
 
@@ -20,84 +20,52 @@ export const Timer: FC<Props> = () => {
 
   const context = useTimerContext();
 
-  const {
-    stopped,
-    durationText,
-    setDurationText,
-    workText,
-    setWorkText,
-    restText,
-    setRestText,
-    minutes,
-    seconds,
-    onReset,
-    onStop,
-  } = context;
+  const {stopped, minutes, seconds, onReset, onStop} = context;
 
   const layout = useMemo(() => new Layout(), []);
 
   return (
     <TimerContext.Provider value={context}>
-      <SafeAreaView style={styles.container}>
-        <Animated.View style={styles.container} layout={layout}>
-          {stopped && (
-            <FadeAnimatedView layout={layout} style={styles.settingsContainer}>
-              <IconButton
-                onPress={toggleDarkMode}
-                source={
-                  isDarkMode
-                    ? require('../assets/icons/sun.png')
-                    : require('../assets/icons/moon.png')
-                }
-              />
-            </FadeAnimatedView>
-          )}
-          {stopped && (
-            <FadeAnimatedView layout={layout}>
-              <TextInput
-                placeholder="Duración total"
-                value={durationText}
-                maxLength={9}
-                onChangeText={text => setDurationText(text)}
-                inputMode="numeric"
-                style={styles.textInput}
-              />
-              <TextInput
-                placeholder="Tiempo de trabajo"
-                value={workText}
-                maxLength={9}
-                onChangeText={text => setWorkText(text)}
-                inputMode="numeric"
-                style={styles.textInput}
-              />
-              <TextInput
-                placeholder="Tiempo de descanso"
-                value={restText}
-                maxLength={9}
-                onChangeText={text => setRestText(text)}
-                inputMode="numeric"
-                style={styles.textInput}
-              />
-            </FadeAnimatedView>
-          )}
-          {!stopped && (
-            <FadeAnimatedText style={[styles.time, textStyle]} layout={layout}>
-              {minutes}:{seconds}
-            </FadeAnimatedText>
-          )}
-          <PlayButton layout={layout} />
-          {!stopped && (
-            <FadeAnimatedView layout={layout}>
-              <TextButton style={styles.reset} onPress={onReset}>
-                Reiniciar
-              </TextButton>
-              <TextButton style={styles.stop} onPress={onStop}>
-                Parar
-              </TextButton>
-            </FadeAnimatedView>
-          )}
-        </Animated.View>
-      </SafeAreaView>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={styles.container}>
+          <Animated.View style={styles.container} layout={layout}>
+            {stopped ? (
+              <>
+                <FadeAnimatedView
+                  layout={layout}
+                  style={styles.settingsContainer}>
+                  <IconButton
+                    onPress={toggleDarkMode}
+                    source={
+                      isDarkMode
+                        ? require('../assets/icons/sun.png')
+                        : require('../assets/icons/moon.png')
+                    }
+                  />
+                </FadeAnimatedView>
+                <DurationsForm layout={layout} />
+              </>
+            ) : (
+              <FadeAnimatedText
+                style={[styles.time, textStyle]}
+                layout={layout}>
+                {minutes}:{seconds}
+              </FadeAnimatedText>
+            )}
+            <PlayButton layout={layout} />
+            {!stopped && (
+              <FadeAnimatedView layout={layout}>
+                <TextButton style={styles.reset} onPress={onReset} largeText>
+                  Reiniciar
+                </TextButton>
+                <TextButton style={styles.stop} onPress={onStop} largeText>
+                  Parar
+                </TextButton>
+              </FadeAnimatedView>
+            )}
+          </Animated.View>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
     </TimerContext.Provider>
   );
 };
@@ -119,10 +87,6 @@ const styles = StyleSheet.create({
   },
   stop: {
     marginTop: 16,
-  },
-  textInput: {
-    marginHorizontal: 16,
-    marginBottom: 16,
   },
   settingsContainer: {
     position: 'absolute',

@@ -7,14 +7,23 @@ import {
 } from 'react-native';
 import {useStyles} from '../hooks/useStyles';
 
-type Props = TouchableOpacityProps;
+type Props = TouchableOpacityProps & {
+  largeText?: boolean;
+};
 
-export const TextButton: FC<Props> = ({children, style, ...props}) => {
+export const TextButton: FC<Props> = ({
+  children,
+  style,
+  largeText,
+  ...props
+}) => {
   const {textStyle} = useStyles();
 
   return (
     <TouchableOpacity style={[styles.container, style]} {...props}>
-      <Text style={[styles.text, textStyle]}>{children}</Text>
+      <Text style={[styles.text, largeText && styles.textLarge, textStyle]}>
+        {children}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -24,8 +33,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   text: {
-    fontSize: 24,
+    fontSize: 16,
     textTransform: 'uppercase',
     alignSelf: 'center',
+  },
+  textLarge: {
+    fontSize: 24,
+    fontWeight: '700',
   },
 });

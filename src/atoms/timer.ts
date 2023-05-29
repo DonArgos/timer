@@ -21,3 +21,21 @@ export const restDurationAtom = atomWithStorage(
   10000,
   getStorage(),
 );
+
+export const globalTimeModeAtom = atomWithStorage<'minutes' | 'hours'>(
+  'global-time-mode',
+  'minutes',
+  getStorage(),
+);
+
+export const workTimeModeAtom = atomWithStorage<'seconds' | 'minutes'>(
+  'work-time-mode',
+  'seconds',
+  getStorage(),
+);
+
+export const restTimeModeAtom = atomWithStorage<'seconds' | 'minutes'>(
+  'rest-time-mode',
+  'seconds',
+  getStorage(),
+);
