@@ -36,9 +36,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textTransform: 'uppercase',
     alignSelf: 'center',
+    fontWeight: '700',
   },
   textLarge: {
     fontSize: 24,
-    fontWeight: '700',
   },
 });

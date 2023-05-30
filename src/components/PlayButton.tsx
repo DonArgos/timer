@@ -1,6 +1,12 @@
 import React, {FC, useContext, useMemo} from 'react';
 import Animated, {Layout} from 'react-native-reanimated';
-import {StyleProp, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ViewStyle,
+} from 'react-native';
 import {useStyles} from '../hooks/useStyles';
 import {FadeAnimatedText} from './FadeAnimatedText';
 import {Pause} from '../assets/icons/Pause';
@@ -24,6 +30,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
   const {
     stopped,
     timer,
+    timeTag,
     animatedProps,
     pauseStyle,
     playStyle,
@@ -59,6 +66,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
         {!stopped && (
           <FadeAnimatedText style={[styles.text, textStyle]} layout={layout}>
             {timer}
+            <Text style={styles.timeTag}> {timeTag}</Text>
           </FadeAnimatedText>
         )}
         <Pause
@@ -93,6 +101,11 @@ const styles = StyleSheet.create({
     width: '100%',
     textAlign: 'center',
     marginBottom: 16,
+    fontStyle: 'italic',
+  },
+  timeTag: {
+    fontSize: 32,
+    fontWeight: '700',
   },
   icon: {
     position: 'absolute',

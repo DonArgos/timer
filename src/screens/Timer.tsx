@@ -106,16 +106,19 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 70,
     textAlign: 'right',
+    fontStyle: 'italic',
   },
   colon: {
     fontSize: 70,
     marginHorizontal: 4,
     marginBottom: 8,
+    fontStyle: 'italic',
   },
   seconds: {
     flex: 1,
     fontSize: 70,
     textAlign: 'left',
+    fontStyle: 'italic',
   },
   reset: {
     marginTop: 32,

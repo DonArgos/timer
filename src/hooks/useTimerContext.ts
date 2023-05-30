@@ -20,7 +20,7 @@ import {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {formatNumbers} from '../utils';
+import {formatNumbers, getTimeUnits, getTimerAndTag} from '../utils';
 import {Durations, durationsSchema} from '../models/durations';
 import Toast from 'react-native-root-toast';
 import {Keyboard} from 'react-native';
@@ -73,30 +73,14 @@ export const useTimerContext = () => {
 
   const iconSize = useSharedValue(1);
 
-  const workDivisor = useMemo(() => {
-    if (workTimeMode === 'seconds') {
-      return 1000;
-    }
-    return 1000 / 60;
-  }, [workTimeMode]);
-
-  const restDivisor = useMemo(() => {
-    if (restTimeMode === 'seconds') {
-      return 1000;
-    }
-    return 1000 / 60;
-  }, [restTimeMode]);
-
   const timeRef = useRef(workDuration);
-  const secondsRef = useRef(workDuration / workDivisor);
+  const secondsRef = useRef(workDuration);
   const secondsWorking = useRef(true);
   const percentageWorking = useRef(true);
   const previousRunning = useRef(true);
 
   const [hours, minutes, seconds] = useMemo(() => {
-    const _hours = Math.floor(duration / 1000 / 60 / 60);
-    const _minutes = Math.floor((duration / 1000 / 60) % 60);
-    const _seconds = Math.floor((duration / 1000) % 60);
+    const {_hours, _minutes, _seconds} = getTimeUnits(duration);
     return [
       formatNumbers(_hours),
       formatNumbers(_minutes),
@@ -104,23 +88,21 @@ export const useTimerContext = () => {
     ];
   }, [duration]);
 
-  const timer = useMemo(() => {
+  const [timer, timeTag] = useMemo(() => {
     if (!running || running !== previousRunning.current) {
       previousRunning.current = running;
-      return secondsRef.current;
+      return getTimerAndTag(secondsRef.current);
     }
-    if (secondsRef.current === 0) {
+    if (secondsRef.current <= 0) {
       secondsWorking.current = !secondsWorking.current;
       secondsRef.current =
-        (secondsWorking.current
-          ? workDuration / workDivisor
-          : restDuration / restDivisor) - 1;
+        (secondsWorking.current ? workDuration : restDuration) - 1000;
     } else {
-      secondsRef.current = secondsRef.current - 1;
+      secondsRef.current = secondsRef.current - 1000;
     }
-    return secondsRef.current;
+    return getTimerAndTag(secondsRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, seconds, workDivisor, restDivisor]);
+  }, [restDuration, running, workDuration, seconds]);
 
   const timerPercentage = useMemo(() => {
     if (stopped) {
@@ -201,6 +183,7 @@ export const useTimerContext = () => {
     setStopped(value => {
       if (value) {
         timeRef.current = result.data.work * workMultiplier;
+        secondsRef.current = result.data.work * workMultiplier;
         iconSize.value = withTiming(0, {
           duration: 200,
           easing: Easing.linear,
@@ -255,10 +238,10 @@ export const useTimerContext = () => {
 
   const resetValues = useCallback(() => {
     timeRef.current = workDuration;
-    secondsRef.current = workDuration / workDivisor;
+    secondsRef.current = workDuration;
     percentageWorking.current = true;
     secondsWorking.current = true;
-  }, [workDivisor, workDuration]);
+  }, [workDuration]);
 
   const onReset = useCallback(() => {
     resetValues();
@@ -310,6 +293,7 @@ export const useTimerContext = () => {
     seconds,
     onPlay,
     timer,
+    timeTag,
     animatedProps,
     pauseStyle,
     playStyle,
