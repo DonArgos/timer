@@ -44,6 +44,7 @@ export const TimerContext = createContext<TimerContextValues | undefined>(
 
 export const useTimerContext = () => {
   const interval = useRef<number>();
+  const preTimerInterval = useRef<number>();
 
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
   const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
@@ -53,8 +54,10 @@ export const useTimerContext = () => {
   const workTimeMode = useAtomValue(workTimeModeAtom);
   const restTimeMode = useAtomValue(restTimeModeAtom);
 
+  const [preTimerRunning, setPreTimerRunning] = useState(false);
   const [stopped, setStopped] = useState(true);
   const [running, setRunning] = useState(false);
+  const [preTimerDuration, setPreTimerDuration] = useState(5000);
   const [duration, setDuration] = useState(globalDuration);
 
   const [durationText, setDurationText] = useState(
@@ -123,7 +126,7 @@ export const useTimerContext = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restDuration, workDuration, duration, running, stopped]);
 
-  const pause = useCallback(() => {
+  const toggleTimer = useCallback(() => {
     setStopped(value => {
       if (value) {
         iconSize.value = withTiming(0, {
@@ -157,7 +160,7 @@ export const useTimerContext = () => {
     return 1000 * 60;
   }, [restTimeMode]);
 
-  const play = useCallback(() => {
+  const startPreTimer = useCallback(() => {
     Keyboard.dismiss();
     const data: Durations = {
       global: Number.parseInt(durationText, 10),
@@ -171,15 +174,27 @@ export const useTimerContext = () => {
       return;
     }
 
-    const _duration = result.data.global * globalMultiplier;
+    setPreTimerRunning(true);
+  }, [durationText, restText, workText]);
+
+  const play = useCallback(() => {
+    const data: Durations = {
+      global: Number.parseInt(durationText, 10),
+      work: Number.parseInt(workText, 10),
+      rest: Number.parseInt(restText, 10),
+    };
+    const result = durationsSchema.parse(data);
+
+    const _duration = result.global * globalMultiplier;
+    setPreTimerRunning(false);
     setGlobalDuration(_duration);
     setDuration(_duration);
-    setWorkDuration(result.data.work * workMultiplier);
-    setRestDuration(result.data.rest * restMultiplier);
+    setWorkDuration(result.work * workMultiplier);
+    setRestDuration(result.rest * restMultiplier);
     setStopped(value => {
       if (value) {
-        timeRef.current = result.data.work * workMultiplier;
-        secondsRef.current = result.data.work * workMultiplier;
+        timeRef.current = result.work * workMultiplier;
+        secondsRef.current = result.work * workMultiplier;
         iconSize.value = withTiming(0, {
           duration: 200,
           easing: Easing.linear,
@@ -203,11 +218,11 @@ export const useTimerContext = () => {
 
   const onPlay = useCallback(() => {
     if (stopped) {
-      play();
+      startPreTimer();
     } else {
-      pause();
+      toggleTimer();
     }
-  }, [pause, play, stopped]);
+  }, [stopped, startPreTimer, toggleTimer]);
 
   useEffect(() => {
     if (running) {
@@ -215,7 +230,7 @@ export const useTimerContext = () => {
         setDuration(value => {
           const newValue = value - msPerRender;
           if (newValue <= 0) {
-            pause();
+            toggleTimer();
             return 0;
           }
           return newValue;
@@ -230,7 +245,34 @@ export const useTimerContext = () => {
         clearInterval(interval.current);
       }
     };
-  }, [pause, running, setDuration]);
+  }, [toggleTimer, running, setDuration]);
+
+  useEffect(() => {
+    if (preTimerRunning) {
+      preTimerInterval.current = setInterval(() => {
+        setPreTimerDuration(value => {
+          const newValue = value - msPerRender;
+          if (newValue <= 0) {
+            play();
+            return 5000;
+          }
+          return newValue;
+        });
+      }, msPerRender);
+    } else if (preTimerInterval.current) {
+      clearInterval(preTimerInterval.current);
+    }
+    return () => {
+      if (preTimerInterval.current) {
+        clearInterval(preTimerInterval.current);
+      }
+    };
+  }, [play, preTimerRunning]);
+
+  const preTimer = useMemo(
+    () => getTimeUnits(preTimerDuration)._seconds + 1,
+    [preTimerDuration],
+  );
 
   const resetValues = useCallback(() => {
     timeRef.current = workDuration;
@@ -242,9 +284,12 @@ export const useTimerContext = () => {
   const onReset = useCallback(() => {
     resetValues();
     previousRunning.current = !previousRunning.current;
+    iconSize.value = withTiming(1, {duration: 300, easing: Easing.linear});
     setDuration(globalDuration);
-    setRunning(true);
-  }, [globalDuration, resetValues]);
+    setRunning(false);
+    setPreTimerRunning(true);
+    setStopped(true);
+  }, [globalDuration, iconSize, resetValues]);
 
   const onStop = useCallback(() => {
     resetValues();
@@ -298,5 +343,7 @@ export const useTimerContext = () => {
     onStop,
     duration,
     timerPercentage,
+    preTimerRunning,
+    preTimer,
   };
 };

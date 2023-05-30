@@ -3,6 +3,7 @@ import {
   Keyboard,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableWithoutFeedback,
 } from 'react-native';
 
@@ -24,7 +25,16 @@ export const Timer: FC<Props> = () => {
 
   const context = useTimerContext();
 
-  const {stopped, hours, minutes, seconds, onReset, onStop} = context;
+  const {
+    stopped,
+    hours,
+    minutes,
+    seconds,
+    onReset,
+    onStop,
+    preTimerRunning,
+    preTimer,
+  } = context;
 
   const layout = useMemo(() => new Layout(), []);
 
@@ -49,7 +59,12 @@ export const Timer: FC<Props> = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
           <Animated.View style={styles.container} layout={layout}>
-            {stopped ? (
+            {preTimerRunning ? (
+              <FadeAnimatedView layout={layout}>
+                <Text style={[styles.preTimer, textStyle]}>{preTimer}</Text>
+                <Text style={[styles.starting, textStyle]}>iniciando</Text>
+              </FadeAnimatedView>
+            ) : stopped ? (
               <>
                 <FadeAnimatedView
                   layout={layout}
@@ -90,6 +105,11 @@ export const Timer: FC<Props> = () => {
   );
 };
 
+const textStyle: TextStyle = {
+  fontSize: 70,
+  fontStyle: 'italic',
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -102,23 +122,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
   },
-  minutes: {
-    flex: 1,
-    fontSize: 70,
-    textAlign: 'right',
+  starting: {
+    fontSize: 32,
+    width: '100%',
+    textAlign: 'center',
     fontStyle: 'italic',
+    marginBottom: 32,
+  },
+  preTimer: {
+    ...textStyle,
+    width: '100%',
+    textAlign: 'center',
+  },
+  minutes: {
+    ...textStyle,
+    flex: 1,
+    textAlign: 'right',
   },
   colon: {
-    fontSize: 70,
+    ...textStyle,
     marginHorizontal: 4,
     marginBottom: 8,
-    fontStyle: 'italic',
   },
   seconds: {
+    ...textStyle,
     flex: 1,
-    fontSize: 70,
     textAlign: 'left',
-    fontStyle: 'italic',
   },
   reset: {
     marginTop: 32,

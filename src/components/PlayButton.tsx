@@ -38,6 +38,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
     onPlay,
     duration,
     timerPercentage,
+    preTimerRunning,
   } = useContext(TimerContext) || {};
 
   const largeSize = useMemo(() => width - 32 - LARGE_BORDER_WIDTH, [width]);
@@ -52,7 +53,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
       <TouchableOpacity
         style={[styles.button, {width: largeSize, height: largeSize}, style]}
         onPress={onPlay}
-        disabled={(duration || 0) <= 0}>
+        disabled={(duration || 0) <= 0 || preTimerRunning}>
         <ProgressCircle
           size={largeSize}
           percentage={(duration || 0) / globalDuration}
