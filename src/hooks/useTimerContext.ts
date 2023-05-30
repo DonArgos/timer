@@ -20,7 +20,12 @@ import {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {formatNumbers, getTimeUnits, getTimerAndTag} from '../utils';
+import {
+  formatNumbers,
+  getDurationText,
+  getTimeUnits,
+  getTimerAndTag,
+} from '../utils';
 import {Durations, durationsSchema} from '../models/durations';
 import Toast from 'react-native-root-toast';
 import {Keyboard} from 'react-native';
@@ -40,9 +45,6 @@ export const TimerContext = createContext<TimerContextValues | undefined>(
 export const useTimerContext = () => {
   const interval = useRef<number>();
 
-  const [stopped, setStopped] = useState(true);
-  const [running, setRunning] = useState(false);
-
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
   const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
   const [restDuration, setRestDuration] = useAtom(restDurationAtom);
@@ -50,26 +52,20 @@ export const useTimerContext = () => {
   const globalTimeMode = useAtomValue(globalTimeModeAtom);
   const workTimeMode = useAtomValue(workTimeModeAtom);
   const restTimeMode = useAtomValue(restTimeModeAtom);
+
+  const [stopped, setStopped] = useState(true);
+  const [running, setRunning] = useState(false);
   const [duration, setDuration] = useState(globalDuration);
 
-  const [durationText, setDurationText] = useState(() => {
-    if (globalTimeMode === 'minutes') {
-      return (globalDuration / 1000 / 60).toString();
-    }
-    return (globalDuration / 1000 / 60 / 60).toString();
-  });
-  const [workText, setWorkText] = useState(() => {
-    if (workTimeMode === 'seconds') {
-      return (workDuration / 1000).toString();
-    }
-    return (workDuration / 1000 / 60).toString();
-  });
-  const [restText, setRestText] = useState(() => {
-    if (restTimeMode === 'seconds') {
-      return (restDuration / 1000).toString();
-    }
-    return (restDuration / 1000 / 60).toString();
-  });
+  const [durationText, setDurationText] = useState(
+    getDurationText(globalTimeMode, globalDuration),
+  );
+  const [workText, setWorkText] = useState(
+    getDurationText(workTimeMode, workDuration),
+  );
+  const [restText, setRestText] = useState(
+    getDurationText(restTimeMode, restDuration),
+  );
 
   const iconSize = useSharedValue(1);
 
