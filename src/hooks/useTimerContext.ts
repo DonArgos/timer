@@ -13,28 +13,20 @@ import {
   workDurationAtom,
 } from '../atoms/timer';
 import {
-  Easing,
-  interpolate,
-  useAnimatedProps,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import {
   formatNumbers,
   getDurationText,
   getTimeUnits,
   getTimerAndTag,
 } from '../utils';
 import {Durations, durationsSchema} from '../models/durations';
-import Toast from 'react-native-root-toast';
-import {Keyboard} from 'react-native';
 import {globalTimeModeAtom} from '../atoms/timer';
 import {workTimeModeAtom} from '../atoms/timer';
 import {restTimeModeAtom} from '../atoms/timer';
+import {usePreTimer} from './usePreTimer';
+import {AnimationState, useAnimations} from './useAnimations';
 
 // 60 fps
-const msPerRender = 1000 / 60;
+export const MS_PER_RENDER = 1000 / 60;
 
 export type TimerContextValues = ReturnType<typeof useTimerContext>;
 
@@ -44,7 +36,6 @@ export const TimerContext = createContext<TimerContextValues | undefined>(
 
 export const useTimerContext = () => {
   const interval = useRef<number>();
-  const preTimerInterval = useRef<number>();
 
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
   const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
@@ -54,10 +45,8 @@ export const useTimerContext = () => {
   const workTimeMode = useAtomValue(workTimeModeAtom);
   const restTimeMode = useAtomValue(restTimeModeAtom);
 
-  const [preTimerRunning, setPreTimerRunning] = useState(false);
   const [stopped, setStopped] = useState(true);
   const [running, setRunning] = useState(false);
-  const [preTimerDuration, setPreTimerDuration] = useState(5000);
   const [duration, setDuration] = useState(globalDuration);
 
   const [durationText, setDurationText] = useState(
@@ -70,7 +59,8 @@ export const useTimerContext = () => {
     getDurationText(restTimeMode, restDuration),
   );
 
-  const iconSize = useSharedValue(1);
+  const {animateIcon, iconAnimatedProps, playStyle, pauseStyle} =
+    useAnimations();
 
   const timeRef = useRef(workDuration);
   const secondsRef = useRef(workDuration);
@@ -117,7 +107,7 @@ export const useTimerContext = () => {
       percentageWorking.current = !percentageWorking.current;
       timeRef.current = percentageWorking.current ? workDuration : restDuration;
     } else {
-      timeRef.current = timeRef.current - msPerRender;
+      timeRef.current = timeRef.current - MS_PER_RENDER;
     }
     const totalDuration = percentageWorking.current
       ? workDuration
@@ -129,15 +119,12 @@ export const useTimerContext = () => {
   const toggleTimer = useCallback(() => {
     setStopped(value => {
       if (value) {
-        iconSize.value = withTiming(0, {
-          duration: 200,
-          easing: Easing.linear,
-        });
+        animateIcon(AnimationState.FINISH);
       }
       return false;
     });
     setRunning(value => !value);
-  }, [iconSize]);
+  }, [animateIcon]);
 
   const globalMultiplier = useMemo(() => {
     if (globalTimeMode === 'minutes') {
@@ -160,23 +147,6 @@ export const useTimerContext = () => {
     return 1000 * 60;
   }, [restTimeMode]);
 
-  const startPreTimer = useCallback(() => {
-    Keyboard.dismiss();
-    const data: Durations = {
-      global: Number.parseInt(durationText, 10),
-      work: Number.parseInt(workText, 10),
-      rest: Number.parseInt(restText, 10),
-    };
-    const result = durationsSchema.safeParse(data);
-
-    if (!result.success) {
-      Toast.show(result.error.errors[0].message);
-      return;
-    }
-
-    setPreTimerRunning(true);
-  }, [durationText, restText, workText]);
-
   const play = useCallback(() => {
     const data: Durations = {
       global: Number.parseInt(durationText, 10),
@@ -186,7 +156,6 @@ export const useTimerContext = () => {
     const result = durationsSchema.parse(data);
 
     const _duration = result.global * globalMultiplier;
-    setPreTimerRunning(false);
     setGlobalDuration(_duration);
     setDuration(_duration);
     setWorkDuration(result.work * workMultiplier);
@@ -195,18 +164,15 @@ export const useTimerContext = () => {
       if (value) {
         timeRef.current = result.work * workMultiplier;
         secondsRef.current = result.work * workMultiplier;
-        iconSize.value = withTiming(0, {
-          duration: 200,
-          easing: Easing.linear,
-        });
+        animateIcon(AnimationState.FINISH);
       }
       return false;
     });
     setRunning(value => !value);
   }, [
+    animateIcon,
     durationText,
     globalMultiplier,
-    iconSize,
     restMultiplier,
     restText,
     setGlobalDuration,
@@ -215,6 +181,14 @@ export const useTimerContext = () => {
     workMultiplier,
     workText,
   ]);
+
+  const {preTimer, setPreTimerRunning, startPreTimer, preTimerRunning} =
+    usePreTimer({
+      play,
+      durationText,
+      restText,
+      workText,
+    });
 
   const onPlay = useCallback(() => {
     if (stopped) {
@@ -228,14 +202,14 @@ export const useTimerContext = () => {
     if (running) {
       interval.current = setInterval(() => {
         setDuration(value => {
-          const newValue = value - msPerRender;
+          const newValue = value - MS_PER_RENDER;
           if (newValue <= 0) {
             toggleTimer();
             return 0;
           }
           return newValue;
         });
-      }, msPerRender);
+      }, MS_PER_RENDER);
     } else if (interval.current) {
       clearInterval(interval.current);
     }
@@ -247,33 +221,6 @@ export const useTimerContext = () => {
     };
   }, [toggleTimer, running, setDuration]);
 
-  useEffect(() => {
-    if (preTimerRunning) {
-      preTimerInterval.current = setInterval(() => {
-        setPreTimerDuration(value => {
-          const newValue = value - msPerRender;
-          if (newValue <= 0) {
-            play();
-            return 5000;
-          }
-          return newValue;
-        });
-      }, msPerRender);
-    } else if (preTimerInterval.current) {
-      clearInterval(preTimerInterval.current);
-    }
-    return () => {
-      if (preTimerInterval.current) {
-        clearInterval(preTimerInterval.current);
-      }
-    };
-  }, [play, preTimerRunning]);
-
-  const preTimer = useMemo(
-    () => getTimeUnits(preTimerDuration)._seconds + 1,
-    [preTimerDuration],
-  );
-
   const resetValues = useCallback(() => {
     timeRef.current = workDuration;
     secondsRef.current = workDuration;
@@ -284,42 +231,20 @@ export const useTimerContext = () => {
   const onReset = useCallback(() => {
     resetValues();
     previousRunning.current = !previousRunning.current;
-    iconSize.value = withTiming(1, {duration: 300, easing: Easing.linear});
+    animateIcon(AnimationState.START);
     setDuration(globalDuration);
     setRunning(false);
     setPreTimerRunning(true);
     setStopped(true);
-  }, [globalDuration, iconSize, resetValues]);
+  }, [animateIcon, globalDuration, resetValues, setPreTimerRunning]);
 
   const onStop = useCallback(() => {
     resetValues();
-    iconSize.value = withTiming(1, {duration: 300, easing: Easing.linear});
+    animateIcon(AnimationState.START);
     setStopped(true);
     setRunning(false);
     setDuration(globalDuration);
-  }, [globalDuration, iconSize, resetValues]);
-
-  const animatedProps = useAnimatedProps(() => ({
-    width: interpolate(iconSize.value, [0, 1], [24, 96]),
-    height: interpolate(iconSize.value, [0, 1], [24, 96]),
-  }));
-
-  const playStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(iconSize.value, [0, 1], [0, 1]),
-    transform: [
-      {
-        translateY: interpolate(iconSize.value, [0, 1], [65, 0]),
-      },
-    ],
-  }));
-
-  const pauseStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: interpolate(iconSize.value, [0, 1], [65, 0]),
-      },
-    ],
-  }));
+  }, [animateIcon, globalDuration, resetValues]);
 
   return {
     stopped,
@@ -335,7 +260,7 @@ export const useTimerContext = () => {
     onPlay,
     timer,
     timeTag,
-    animatedProps,
+    iconAnimatedProps,
     pauseStyle,
     playStyle,
     running,

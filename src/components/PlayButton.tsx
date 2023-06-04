@@ -31,7 +31,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
     stopped,
     timer,
     timeTag,
-    animatedProps,
+    iconAnimatedProps,
     pauseStyle,
     playStyle,
     running,
@@ -72,12 +72,12 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
         )}
         <Pause
           layout={layout}
-          animatedProps={animatedProps}
+          animatedProps={iconAnimatedProps}
           style={[styles.icon, backgroundStyle, pauseStyle]}
         />
         <Play
           layout={layout}
-          animatedProps={animatedProps}
+          animatedProps={iconAnimatedProps}
           style={[styles.icon, backgroundStyle, playStyle]}
         />
         {!running && !stopped && (
