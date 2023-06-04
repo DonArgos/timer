@@ -18,39 +18,37 @@ export const usePreTimer = ({
   workText,
   restText,
 }: Props) => {
-  const preTimerInterval = useRef<number>();
-  const [preTimerRunning, setPreTimerRunning] = useState(false);
-  const [preTimerDuration, setPreTimerDuration] = useState(5000);
+  const interval = useRef<number>();
+
+  const [running, setRunning] = useState(false);
+  const [duration, setDuration] = useState(5000);
 
   useEffect(() => {
-    if (preTimerRunning) {
-      preTimerInterval.current = setInterval(() => {
-        setPreTimerDuration(value => {
+    if (running) {
+      interval.current = setInterval(() => {
+        setDuration(value => {
           const newValue = value - MS_PER_RENDER;
           if (newValue <= 0) {
-            setPreTimerRunning(false);
+            setRunning(false);
             play();
             return 5000;
           }
           return newValue;
         });
       }, MS_PER_RENDER);
-    } else if (preTimerInterval.current) {
-      clearInterval(preTimerInterval.current);
+    } else if (interval.current) {
+      clearInterval(interval.current);
     }
     return () => {
-      if (preTimerInterval.current) {
-        clearInterval(preTimerInterval.current);
+      if (interval.current) {
+        clearInterval(interval.current);
       }
     };
-  }, [play, preTimerRunning]);
+  }, [play, running]);
 
-  const preTimer = useMemo(
-    () => getTimeUnits(preTimerDuration)._seconds + 1,
-    [preTimerDuration],
-  );
+  const timer = useMemo(() => getTimeUnits(duration)._seconds + 1, [duration]);
 
-  const startPreTimer = useCallback(() => {
+  const start = useCallback(() => {
     Keyboard.dismiss();
     const data: Durations = {
       global: Number.parseInt(durationText, 10),
@@ -64,8 +62,14 @@ export const usePreTimer = ({
       return;
     }
 
-    setPreTimerRunning(true);
+    setRunning(true);
   }, [durationText, restText, workText]);
 
-  return {preTimer, setPreTimerRunning, startPreTimer, preTimerRunning};
+  return {
+    preTimerDuration: duration,
+    preTimer: timer,
+    setPreTimerRunning: setRunning,
+    startPreTimer: start,
+    preTimerRunning: running,
+  };
 };

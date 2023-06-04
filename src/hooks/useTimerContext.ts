@@ -24,6 +24,7 @@ import {workTimeModeAtom} from '../atoms/timer';
 import {restTimeModeAtom} from '../atoms/timer';
 import {usePreTimer} from './usePreTimer';
 import {AnimationState, useAnimations} from './useAnimations';
+import {useAppState} from './useAppState';
 
 // 60 fps
 export const MS_PER_RENDER = 1000 / 60;
@@ -182,21 +183,47 @@ export const useTimerContext = () => {
     workText,
   ]);
 
-  const {preTimer, setPreTimerRunning, startPreTimer, preTimerRunning} =
-    usePreTimer({
-      play,
-      durationText,
-      restText,
-      workText,
-    });
+  const {
+    preTimerDuration,
+    preTimer,
+    setPreTimerRunning,
+    startPreTimer,
+    preTimerRunning,
+  } = usePreTimer({
+    play,
+    durationText,
+    restText,
+    workText,
+  });
 
-  const onPlay = useCallback(() => {
-    if (stopped) {
-      startPreTimer();
-    } else {
-      toggleTimer();
-    }
-  }, [stopped, startPreTimer, toggleTimer]);
+  const onPause = useCallback(() => {
+    setRunning(false);
+    setPreTimerRunning(false);
+  }, [setPreTimerRunning]);
+
+  const onPlay = useCallback(
+    (fromBackground: boolean = false) => {
+      if (fromBackground) {
+        if (preTimerDuration === 5000 && stopped) {
+          return;
+        }
+        if (preTimerDuration < 5000) {
+          setPreTimerRunning(true);
+          return;
+        }
+        setRunning(true);
+        return;
+      }
+      if (stopped) {
+        startPreTimer();
+      } else {
+        toggleTimer();
+      }
+    },
+    [stopped, preTimerDuration, setPreTimerRunning, startPreTimer, toggleTimer],
+  );
+
+  useAppState(onPlay, onPause);
 
   useEffect(() => {
     if (running) {
@@ -258,6 +285,7 @@ export const useTimerContext = () => {
     minutes,
     seconds,
     onPlay,
+    toggleTimer,
     timer,
     timeTag,
     iconAnimatedProps,
@@ -270,5 +298,6 @@ export const useTimerContext = () => {
     timerPercentage,
     preTimerRunning,
     preTimer,
+    preTimerDuration,
   };
 };

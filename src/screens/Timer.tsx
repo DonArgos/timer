@@ -15,13 +15,13 @@ import {FadeAnimatedView} from '../components/FadeAnimatedView';
 import {TimerContext, useTimerContext} from '../hooks/useTimerContext';
 import {PlayButton} from '../components/PlayButton';
 import {MainStackScreenProps, Screens} from './types';
-import {IconButton} from '../components/IconButton';
 import {DurationsForm} from '../components/DurationsForm';
+import {DarkModeToggle} from '../components/DarkModeToggle';
 
 type Props = MainStackScreenProps<Screens.Timer>;
 
 export const Timer: FC<Props> = () => {
-  const {textStyle, isDarkMode, toggleDarkMode} = useStyles();
+  const {textStyle, toggleDarkMode} = useStyles();
 
   const context = useTimerContext();
 
@@ -34,6 +34,7 @@ export const Timer: FC<Props> = () => {
     onStop,
     preTimerRunning,
     preTimer,
+    preTimerDuration,
   } = context;
 
   const layout = useMemo(() => new Layout(), []);
@@ -59,25 +60,18 @@ export const Timer: FC<Props> = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
           <Animated.View style={styles.container} layout={layout}>
-            {preTimerRunning ? (
+            {preTimerRunning || preTimerDuration < 5000 ? (
               <FadeAnimatedView layout={layout}>
                 <Text style={[styles.preTimer, textStyle]}>{preTimer}</Text>
                 <Text style={[styles.starting, textStyle]}>iniciando</Text>
               </FadeAnimatedView>
             ) : stopped ? (
               <>
-                <FadeAnimatedView
+                <DarkModeToggle
                   layout={layout}
-                  style={styles.settingsContainer}>
-                  <IconButton
-                    onPress={toggleDarkMode}
-                    source={
-                      isDarkMode
-                        ? require('../assets/icons/sun.png')
-                        : require('../assets/icons/moon.png')
-                    }
-                  />
-                </FadeAnimatedView>
+                  style={styles.settingsContainer}
+                  onPress={toggleDarkMode}
+                />
                 <DurationsForm layout={layout} />
               </>
             ) : (
