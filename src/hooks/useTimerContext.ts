@@ -10,6 +10,7 @@ import {
 import {
   globalDurationAtom,
   restDurationAtom,
+  timerPauseDataAtom,
   workDurationAtom,
 } from '../atoms/timer';
 import {
@@ -41,6 +42,7 @@ export const useTimerContext = () => {
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
   const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
   const [restDuration, setRestDuration] = useAtom(restDurationAtom);
+  const [timerPauseData, setTimerPauseData] = useAtom(timerPauseDataAtom);
 
   const globalTimeMode = useAtomValue(globalTimeModeAtom);
   const workTimeMode = useAtomValue(workTimeModeAtom);
@@ -49,6 +51,8 @@ export const useTimerContext = () => {
   const [stopped, setStopped] = useState(true);
   const [running, setRunning] = useState(false);
   const [duration, setDuration] = useState(globalDuration);
+
+  const durationRef = useRef(duration);
 
   const [durationText, setDurationText] = useState(
     getDurationText(globalTimeMode, globalDuration),
@@ -211,6 +215,15 @@ export const useTimerContext = () => {
           setPreTimerRunning(true);
           return;
         }
+        if (timerPauseData) {
+          setDuration(value => {
+            const backgroundTime = Date.now() - timerPauseData.timestamp;
+            return value - backgroundTime;
+          });
+          setRunning(true);
+          setTimerPauseData(null);
+          return;
+        }
         setRunning(true);
         return;
       }
@@ -220,7 +233,15 @@ export const useTimerContext = () => {
         toggleTimer();
       }
     },
-    [stopped, preTimerDuration, setPreTimerRunning, startPreTimer, toggleTimer],
+    [
+      stopped,
+      preTimerDuration,
+      timerPauseData,
+      setPreTimerRunning,
+      setTimerPauseData,
+      startPreTimer,
+      toggleTimer,
+    ],
   );
 
   useAppState(onPlay, onPause);
@@ -231,14 +252,18 @@ export const useTimerContext = () => {
         setDuration(value => {
           const newValue = value - MS_PER_RENDER;
           if (newValue <= 0) {
-            toggleTimer();
+            onPause();
             return 0;
           }
+          durationRef.current = newValue;
           return newValue;
         });
       }, MS_PER_RENDER);
-    } else if (interval.current) {
-      clearInterval(interval.current);
+    } else {
+      setTimerPauseData({duration: durationRef.current, timestamp: Date.now()});
+      if (interval.current) {
+        clearInterval(interval.current);
+      }
     }
     previousRunning.current = running;
     return () => {
@@ -246,7 +271,7 @@ export const useTimerContext = () => {
         clearInterval(interval.current);
       }
     };
-  }, [toggleTimer, running, setDuration]);
+  }, [onPause, running, setDuration, setTimerPauseData]);
 
   const resetValues = useCallback(() => {
     timeRef.current = workDuration;
@@ -259,19 +284,29 @@ export const useTimerContext = () => {
     resetValues();
     previousRunning.current = !previousRunning.current;
     animateIcon(AnimationState.START);
+
+    setTimerPauseData(null);
     setDuration(globalDuration);
     setRunning(false);
     setPreTimerRunning(true);
     setStopped(true);
-  }, [animateIcon, globalDuration, resetValues, setPreTimerRunning]);
+  }, [
+    animateIcon,
+    globalDuration,
+    resetValues,
+    setPreTimerRunning,
+    setTimerPauseData,
+  ]);
 
   const onStop = useCallback(() => {
     resetValues();
     animateIcon(AnimationState.START);
+
+    setTimerPauseData(null);
     setStopped(true);
     setRunning(false);
     setDuration(globalDuration);
-  }, [animateIcon, globalDuration, resetValues]);
+  }, [animateIcon, globalDuration, resetValues, setTimerPauseData]);
 
   return {
     stopped,
