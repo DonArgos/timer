@@ -200,31 +200,46 @@ export const useTimerContext = () => {
     workText,
   });
 
-  const onPause = useCallback(() => {
-    setRunning(false);
-    setPreTimerRunning(false);
-  }, [setPreTimerRunning]);
+  const onPause = useCallback(
+    (fromBackground: boolean = false) => {
+      if (fromBackground && running) {
+        setTimerPauseData({
+          duration: durationRef.current,
+          timestamp: Date.now(),
+        });
+        setRunning(false);
+        setPreTimerRunning(false);
+        return;
+      }
+      setRunning(false);
+      setPreTimerRunning(false);
+    },
+    [running, setPreTimerRunning, setTimerPauseData],
+  );
 
   const onPlay = useCallback(
     (fromBackground: boolean = false) => {
       if (fromBackground) {
-        if (preTimerDuration === 5000 && stopped) {
-          return;
-        }
         if (preTimerDuration < 5000) {
           setPreTimerRunning(true);
           return;
         }
         if (timerPauseData) {
-          setDuration(value => {
-            const backgroundTime = Date.now() - timerPauseData.timestamp;
-            return value - backgroundTime;
-          });
+          const newDuration =
+            timerPauseData.duration - (Date.now() - timerPauseData.timestamp);
+
+          animateIcon(AnimationState.FINISH);
+
+          setDuration(newDuration);
+          setStopped(false);
           setRunning(true);
           setTimerPauseData(null);
           return;
         }
-        setRunning(true);
+        if (preTimerDuration === 5000 && stopped) {
+          return;
+        }
+        // setRunning(true);
         return;
       }
       if (stopped) {
@@ -235,10 +250,11 @@ export const useTimerContext = () => {
     },
     [
       stopped,
-      preTimerDuration,
       timerPauseData,
-      setPreTimerRunning,
+      preTimerDuration,
+      animateIcon,
       setTimerPauseData,
+      setPreTimerRunning,
       startPreTimer,
       toggleTimer,
     ],
@@ -260,7 +276,6 @@ export const useTimerContext = () => {
         });
       }, MS_PER_RENDER);
     } else {
-      setTimerPauseData({duration: durationRef.current, timestamp: Date.now()});
       if (interval.current) {
         clearInterval(interval.current);
       }
@@ -271,14 +286,15 @@ export const useTimerContext = () => {
         clearInterval(interval.current);
       }
     };
-  }, [onPause, running, setDuration, setTimerPauseData]);
+  }, [onPause, running, setDuration]);
 
   const resetValues = useCallback(() => {
+    durationRef.current = globalDuration;
     timeRef.current = workDuration;
     secondsRef.current = workDuration;
     percentageWorking.current = true;
     secondsWorking.current = true;
-  }, [workDuration]);
+  }, [globalDuration, workDuration]);
 
   const onReset = useCallback(() => {
     resetValues();
