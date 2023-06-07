@@ -43,4 +43,6 @@ export const restTimeModeAtom = atomWithStorage<'seconds' | 'minutes'>(
 export const timerPauseDataAtom = atomWithStorage<{
   duration: number;
   timestamp: number;
+  timerDuration: number;
+  working: boolean;
 } | null>('timer-pause-data', null, getStorage());

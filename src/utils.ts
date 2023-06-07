@@ -36,3 +36,60 @@ export const getDurationText = (
   }
   return (duration / 1000 / 60 / 60).toString();
 };
+
+export const calculateNewTimer = (
+  timePassed: number,
+  working: boolean,
+  currentTimer: number,
+  workDuration: number,
+  restDuration: number,
+) => {
+  const secondsPassed = Math.round(timePassed / 1000);
+
+  for (let i = secondsPassed; i > 0; i--) {
+    if (currentTimer === 0) {
+      working = !working;
+      currentTimer = working ? workDuration : restDuration;
+    } else {
+      currentTimer = currentTimer - 1000;
+    }
+  }
+
+  return {currentTimer, working};
+};
+
+export const calculateOcurrences = (
+  totalDuration: number,
+  workDuration: number,
+  restDuration: number,
+) => {
+  let workOccurrences = 0;
+  let restOccurrences = 0;
+  let sum = 0;
+  let finished = false;
+
+  while (sum <= totalDuration && !finished) {
+    sum = workOccurrences * workDuration + restOccurrences * restDuration;
+
+    if (sum <= totalDuration) {
+      let added = false;
+      if (sum + workDuration <= totalDuration) {
+        added = true;
+        workOccurrences++;
+      }
+
+      if (sum + restDuration <= totalDuration) {
+        added = true;
+        restOccurrences++;
+      }
+      if (!added) {
+        finished = true;
+      }
+    }
+  }
+
+  return {
+    workOccurrences,
+    restOccurrences,
+  };
+};

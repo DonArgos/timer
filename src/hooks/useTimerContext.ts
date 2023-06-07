@@ -14,6 +14,7 @@ import {
   workDurationAtom,
 } from '../atoms/timer';
 import {
+  calculateNewTimer,
   formatNumbers,
   getDurationText,
   getTimeUnits,
@@ -67,7 +68,7 @@ export const useTimerContext = () => {
   const {animateIcon, iconAnimatedProps, playStyle, pauseStyle} =
     useAnimations();
 
-  const timeRef = useRef(workDuration);
+  const percentageRef = useRef(workDuration);
   const secondsRef = useRef(workDuration);
   const secondsWorking = useRef(true);
   const percentageWorking = useRef(true);
@@ -89,6 +90,10 @@ export const useTimerContext = () => {
     }
     if (secondsRef.current <= 0) {
       secondsWorking.current = !secondsWorking.current;
+      percentageWorking.current = secondsWorking.current;
+      percentageRef.current = percentageWorking.current
+        ? workDuration
+        : restDuration;
       secondsRef.current =
         (secondsWorking.current ? workDuration : restDuration) - 1000;
     } else {
@@ -106,18 +111,18 @@ export const useTimerContext = () => {
       const totalDuration = percentageWorking.current
         ? workDuration
         : restDuration;
-      return timeRef.current / totalDuration;
+      return percentageRef.current / totalDuration;
     }
-    if (timeRef.current <= 0) {
-      percentageWorking.current = !percentageWorking.current;
-      timeRef.current = percentageWorking.current ? workDuration : restDuration;
-    } else {
-      timeRef.current = timeRef.current - MS_PER_RENDER;
+    if (percentageRef.current <= 0) {
+      return 1;
     }
+
+    percentageRef.current = percentageRef.current - MS_PER_RENDER;
+
     const totalDuration = percentageWorking.current
       ? workDuration
       : restDuration;
-    return timeRef.current / totalDuration;
+    return percentageRef.current / totalDuration;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restDuration, workDuration, duration, running, stopped]);
 
@@ -161,13 +166,14 @@ export const useTimerContext = () => {
     const result = durationsSchema.parse(data);
 
     const _duration = result.global * globalMultiplier;
+
     setGlobalDuration(_duration);
     setDuration(_duration);
     setWorkDuration(result.work * workMultiplier);
     setRestDuration(result.rest * restMultiplier);
     setStopped(value => {
       if (value) {
-        timeRef.current = result.work * workMultiplier;
+        percentageRef.current = result.work * workMultiplier;
         secondsRef.current = result.work * workMultiplier;
         animateIcon(AnimationState.FINISH);
       }
@@ -206,6 +212,8 @@ export const useTimerContext = () => {
         setTimerPauseData({
           duration: durationRef.current,
           timestamp: Date.now(),
+          timerDuration: secondsRef.current,
+          working: secondsWorking.current,
         });
         setRunning(false);
         setPreTimerRunning(false);
@@ -225,8 +233,22 @@ export const useTimerContext = () => {
           return;
         }
         if (timerPauseData) {
-          const newDuration =
-            timerPauseData.duration - (Date.now() - timerPauseData.timestamp);
+          const timePassed = Date.now() - timerPauseData.timestamp;
+          const newDuration = timerPauseData.duration - timePassed;
+
+          const {currentTimer, working} = calculateNewTimer(
+            timePassed,
+            timerPauseData.working,
+            timerPauseData.timerDuration,
+            workDuration,
+            restDuration,
+          );
+
+          // there could be a bit of time offset on the percentage so adding 300 to mitigate it
+          percentageRef.current = currentTimer + 300;
+          secondsRef.current = currentTimer;
+          secondsWorking.current = working;
+          percentageWorking.current = working;
 
           animateIcon(AnimationState.FINISH);
 
@@ -239,7 +261,6 @@ export const useTimerContext = () => {
         if (preTimerDuration === 5000 && stopped) {
           return;
         }
-        // setRunning(true);
         return;
       }
       if (stopped) {
@@ -250,11 +271,13 @@ export const useTimerContext = () => {
     },
     [
       stopped,
-      timerPauseData,
       preTimerDuration,
+      timerPauseData,
+      setPreTimerRunning,
+      workDuration,
+      restDuration,
       animateIcon,
       setTimerPauseData,
-      setPreTimerRunning,
       startPreTimer,
       toggleTimer,
     ],
@@ -290,7 +313,7 @@ export const useTimerContext = () => {
 
   const resetValues = useCallback(() => {
     durationRef.current = globalDuration;
-    timeRef.current = workDuration;
+    percentageRef.current = workDuration;
     secondsRef.current = workDuration;
     percentageWorking.current = true;
     secondsWorking.current = true;
