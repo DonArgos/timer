@@ -27,6 +27,7 @@ import {restTimeModeAtom} from '../atoms/timer';
 import {usePreTimer} from './usePreTimer';
 import {AnimationState, useAnimations} from './useAnimations';
 import {useAppState} from './useAppState';
+import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
 
 // 60 fps
 export const MS_PER_RENDER = 1000 / 60;
@@ -133,7 +134,14 @@ export const useTimerContext = () => {
       }
       return false;
     });
-    setRunning(value => !value);
+    setRunning(value => {
+      if (value) {
+        deactivateKeepAwake();
+      } else {
+        activateKeepAwakeAsync();
+      }
+      return !value;
+    });
   }, [animateIcon]);
 
   const globalMultiplier = useMemo(() => {
@@ -167,6 +175,7 @@ export const useTimerContext = () => {
 
     const _duration = result.global * globalMultiplier;
 
+    activateKeepAwakeAsync();
     setGlobalDuration(_duration);
     setDuration(_duration);
     setWorkDuration(result.work * workMultiplier);
@@ -219,6 +228,7 @@ export const useTimerContext = () => {
         setPreTimerRunning(false);
         return;
       }
+      deactivateKeepAwake();
       setRunning(false);
       setPreTimerRunning(false);
     },
@@ -341,6 +351,7 @@ export const useTimerContext = () => {
     resetValues();
     animateIcon(AnimationState.START);
 
+    deactivateKeepAwake();
     setTimerPauseData(null);
     setStopped(true);
     setRunning(false);
