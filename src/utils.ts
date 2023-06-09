@@ -16,9 +16,15 @@ export const getTimeUnits = (duration: number) => {
 /**
  * @param duration miliseconds
  */
-export const getTimerAndTag = (duration: number) => {
+export const getTimerAndTag = (
+  duration: number,
+  minutesLabel: string,
+  secondsLabel: string,
+) => {
   const {_minutes, _seconds} = getTimeUnits(duration);
-  return _minutes > 0 ? [_minutes + 1, 'min'] : [_seconds + 1, 'seg'];
+  return _minutes > 0
+    ? [_minutes + 1, minutesLabel]
+    : [_seconds + 1, secondsLabel];
 };
 
 /**

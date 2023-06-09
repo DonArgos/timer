@@ -1,14 +1,18 @@
 import React, {FC} from 'react';
 import {MainStackScreenProps, Screens} from './types';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {useStyles} from '../hooks/useStyles';
 import {IconButton} from '../components/IconButton';
+import {TextButton} from '../components/TextButton';
+import {useLanguage} from '../hooks/useLanguage';
 
 type Props = MainStackScreenProps<Screens.Settings>;
 
 export const Settings: FC<Props> = ({navigation}) => {
-  const {isDarkMode, toggleDarkMode} = useStyles();
+  const {isDarkMode, toggleDarkMode, textStyle} = useStyles();
+
+  const {language, toggleLanguage, label} = useLanguage();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,6 +30,12 @@ export const Settings: FC<Props> = ({navigation}) => {
           }
         />
       </View>
+      <View style={styles.itemContainer}>
+        <Text style={[textStyle, styles.label]}>{label('changeLanguage')}</Text>
+        <TextButton underline onPress={toggleLanguage}>
+          {language === 'ENG' ? 'ESP' : 'ENG'}
+        </TextButton>
+      </View>
     </SafeAreaView>
   );
 };
@@ -37,5 +47,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  label: {
+    fontSize: 16,
   },
 });

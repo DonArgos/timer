@@ -28,6 +28,7 @@ import {usePreTimer} from './usePreTimer';
 import {AnimationState, useAnimations} from './useAnimations';
 import {useAppState} from './useAppState';
 import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
+import {useLanguage} from './useLanguage';
 
 // 60 fps
 export const MS_PER_RENDER = 1000 / 60;
@@ -66,6 +67,8 @@ export const useTimerContext = () => {
     getDurationText(restTimeMode, restDuration),
   );
 
+  const {label} = useLanguage();
+
   const {animateIcon, iconAnimatedProps, playStyle, pauseStyle} =
     useAnimations();
 
@@ -87,7 +90,11 @@ export const useTimerContext = () => {
   const [timer, timeTag] = useMemo(() => {
     if (!running || running !== previousRunning.current) {
       previousRunning.current = running;
-      return getTimerAndTag(secondsRef.current);
+      return getTimerAndTag(
+        secondsRef.current,
+        label('minutesTag'),
+        label('secondsTag'),
+      );
     }
     if (secondsRef.current <= 0) {
       secondsWorking.current = !secondsWorking.current;
@@ -100,9 +107,13 @@ export const useTimerContext = () => {
     } else {
       secondsRef.current = secondsRef.current - 1000;
     }
-    return getTimerAndTag(secondsRef.current);
+    return getTimerAndTag(
+      secondsRef.current,
+      label('minutesTag'),
+      label('secondsTag'),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restDuration, running, workDuration, seconds]);
+  }, [restDuration, running, workDuration, seconds, label]);
 
   const timerPercentage = useMemo(() => {
     if (stopped) {

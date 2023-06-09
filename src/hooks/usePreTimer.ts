@@ -4,6 +4,8 @@ import {getTimeUnits} from '../utils';
 import {Keyboard} from 'react-native';
 import {Durations, durationsSchema} from '../models/durations';
 import Toast from 'react-native-root-toast';
+import {useLanguage} from './useLanguage';
+import {Message} from '../language';
 
 type Props = {
   play: () => void;
@@ -19,6 +21,8 @@ export const usePreTimer = ({
   restText,
 }: Props) => {
   const interval = useRef<number>();
+
+  const {label} = useLanguage();
 
   const [running, setRunning] = useState(false);
   const [duration, setDuration] = useState(5000);
@@ -58,12 +62,12 @@ export const usePreTimer = ({
     const result = durationsSchema.safeParse(data);
 
     if (!result.success) {
-      Toast.show(result.error.errors[0].message);
+      Toast.show(label(result.error.errors[0].message as Message));
       return;
     }
 
     setRunning(true);
-  }, [durationText, restText, workText]);
+  }, [durationText, label, restText, workText]);
 
   return {
     preTimerDuration: duration,

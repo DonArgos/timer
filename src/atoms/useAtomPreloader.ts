@@ -8,7 +8,7 @@ import {
   workDurationAtom,
   workTimeModeAtom,
 } from './timer';
-import {darkModeAtom} from './app';
+import {darkModeAtom, languageAtom} from './app';
 
 export const useAtomPreloader = () => {
   useAtom(globalDurationAtom);
@@ -19,4 +19,5 @@ export const useAtomPreloader = () => {
   useAtom(restTimeModeAtom);
   useAtom(darkModeAtom);
   useAtom(timerPauseDataAtom);
+  useAtom(languageAtom);
 };

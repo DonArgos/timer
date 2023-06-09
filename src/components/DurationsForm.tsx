@@ -11,6 +11,7 @@ import {
   restTimeModeAtom,
   workTimeModeAtom,
 } from '../atoms/timer';
+import {useLanguage} from '../hooks/useLanguage';
 
 type Props = {
   layout: Layout;
@@ -26,6 +27,8 @@ export const DurationsForm: FC<Props> = ({layout}) => {
     setRestText,
   } = useContext(TimerContext) || {};
 
+  const {label} = useLanguage();
+
   const [globalTimeMode, setGlobalTimeMode] = useAtom(globalTimeModeAtom);
   const [workTimeMode, setWorkTimeMode] = useAtom(workTimeModeAtom);
   const [restTimeMode, setRestTimeMode] = useAtom(restTimeModeAtom);
@@ -34,7 +37,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
     <FadeAnimatedView layout={layout}>
       <View style={styles.container}>
         <TextInput
-          placeholder="Duración total"
+          placeholder={label('totalDuration')}
           value={durationText}
           maxLength={9}
           onChangeText={text => setDurationText?.(text)}
@@ -43,6 +46,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
         />
         <TextButton
           style={styles.button}
+          underline
           onPress={() =>
             setGlobalTimeMode(value => {
               if (value === 'minutes') {
@@ -51,12 +55,14 @@ export const DurationsForm: FC<Props> = ({layout}) => {
               return 'minutes';
             })
           }>
-          {globalTimeMode === 'minutes' ? 'min' : 'hrs'}
+          {globalTimeMode === 'minutes'
+            ? label('minutesTag')
+            : label('hoursTag')}
         </TextButton>
       </View>
       <View style={styles.textInputContainer}>
         <TextInput
-          placeholder="Tiempo de trabajo"
+          placeholder={label('workDuration')}
           value={workText}
           maxLength={9}
           onChangeText={text => setWorkText?.(text)}
@@ -65,6 +71,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
         />
         <TextButton
           style={styles.button}
+          underline
           onPress={() =>
             setWorkTimeMode(value => {
               if (value === 'minutes') {
@@ -73,12 +80,14 @@ export const DurationsForm: FC<Props> = ({layout}) => {
               return 'minutes';
             })
           }>
-          {workTimeMode === 'minutes' ? 'min' : 'seg'}
+          {workTimeMode === 'minutes'
+            ? label('minutesTag')
+            : label('secondsTag')}
         </TextButton>
       </View>
       <View style={styles.textInputContainer}>
         <TextInput
-          placeholder="Tiempo de descanso"
+          placeholder={label('restDuration')}
           value={restText}
           maxLength={9}
           onChangeText={text => setRestText?.(text)}
@@ -87,6 +96,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
         />
         <TextButton
           style={styles.button}
+          underline
           onPress={() =>
             setRestTimeMode(value => {
               if (value === 'minutes') {
@@ -95,7 +105,9 @@ export const DurationsForm: FC<Props> = ({layout}) => {
               return 'minutes';
             })
           }>
-          {restTimeMode === 'minutes' ? 'min' : 'seg'}
+          {restTimeMode === 'minutes'
+            ? label('minutesTag')
+            : label('secondsTag')}
         </TextButton>
       </View>
     </FadeAnimatedView>

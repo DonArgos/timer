@@ -16,14 +16,17 @@ import {TimerContext, useTimerContext} from '../hooks/useTimerContext';
 import {PlayButton} from '../components/PlayButton';
 import {MainStackScreenProps, Screens} from './types';
 import {DurationsForm} from '../components/DurationsForm';
-import {DarkModeToggle} from '../components/DarkModeToggle';
+import {useLanguage} from '../hooks/useLanguage';
+import {IconButton} from '../components/IconButton';
 
 type Props = MainStackScreenProps<Screens.Timer>;
 
-export const Timer: FC<Props> = () => {
-  const {textStyle, toggleDarkMode} = useStyles();
+export const Timer: FC<Props> = ({navigation}) => {
+  const {textStyle} = useStyles();
 
   const context = useTimerContext();
+
+  const {label} = useLanguage();
 
   const {
     stopped,
@@ -63,15 +66,20 @@ export const Timer: FC<Props> = () => {
             {preTimerRunning || preTimerDuration < 5000 ? (
               <FadeAnimatedView layout={layout}>
                 <Text style={[styles.preTimer, textStyle]}>{preTimer}</Text>
-                <Text style={[styles.starting, textStyle]}>iniciando</Text>
+                <Text style={[styles.starting, textStyle]}>
+                  {label('starting')}
+                </Text>
               </FadeAnimatedView>
             ) : stopped ? (
               <>
-                <DarkModeToggle
+                <FadeAnimatedView
                   layout={layout}
-                  style={styles.settingsContainer}
-                  onPress={toggleDarkMode}
-                />
+                  style={styles.settingsContainer}>
+                  <IconButton
+                    onPress={() => navigation.navigate(Screens.Settings)}
+                    source={require('../assets/icons/settings.png')}
+                  />
+                </FadeAnimatedView>
                 <DurationsForm layout={layout} />
               </>
             ) : (
@@ -85,10 +93,10 @@ export const Timer: FC<Props> = () => {
             {!stopped && (
               <FadeAnimatedView layout={layout}>
                 <TextButton style={styles.reset} onPress={onReset} largeText>
-                  Reiniciar
+                  {label('restartButton')}
                 </TextButton>
                 <TextButton style={styles.stop} onPress={onStop} largeText>
-                  Parar
+                  {label('stopButton')}
                 </TextButton>
               </FadeAnimatedView>
             )}
