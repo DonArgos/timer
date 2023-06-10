@@ -2,6 +2,10 @@ import {useAtomValue} from 'jotai';
 import {useEffect, useRef, useState} from 'react';
 import {AppState} from 'react-native';
 import {globalDurationAtom, timerPauseDataAtom} from '../atoms/timer';
+import {
+  cancelAllScheduledNotificationsAsync,
+  dismissAllNotificationsAsync,
+} from 'expo-notifications';
 
 export const useAppState = (
   onPlay: (fromBackground: boolean) => void,
@@ -13,6 +17,8 @@ export const useAppState = (
   const duration = useAtomValue(globalDurationAtom);
 
   useEffect(() => {
+    cancelAllScheduledNotificationsAsync();
+    dismissAllNotificationsAsync();
     if (timerPauseData && timerPauseData.duration < duration) {
       onPlay(true);
     }
@@ -25,6 +31,8 @@ export const useAppState = (
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active'
       ) {
+        cancelAllScheduledNotificationsAsync();
+        dismissAllNotificationsAsync();
         onPlay(true);
       } else if (nextAppState.match(/inactive|background/)) {
         onPause(true);

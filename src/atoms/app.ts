@@ -19,3 +19,9 @@ export const languageAtom = atomWithStorage<Language>(
   'ESP',
   getStorage(),
 );
+
+export const notificationsAtom = atomWithStorage(
+  'notifications',
+  true,
+  getStorage(),
+);

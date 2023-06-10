@@ -17,6 +17,12 @@ export const language = {
     restDurationPositiveError: 'El tiempo de descanso debe ser mayor a 0',
     changeLanguage: 'Cambiar lenguaje, se reiniciará la aplicación',
     settings: 'Configuración',
+    notifications: 'Notificaciones en segundo plano',
+    timerFinished: 'El contador ha terminado',
+    workTimerFinished: 'Descansa un momento',
+    restTimerFinished: 'Volver a trabajar',
+    notificationError:
+      'Las notificaciones han sido rechazadas, ve a configuración para actualizar los permisos',
   },
   ENG: {
     totalDuration: 'Total duration',
@@ -36,6 +42,12 @@ export const language = {
     restDurationPositiveError: 'Rest duration must be greater 0',
     changeLanguage: 'Change language, app will be restarted',
     settings: 'Settings',
+    notifications: 'Background notifications',
+    timerFinished: 'Timer has finished',
+    workTimerFinished: 'Rest a moment',
+    restTimerFinished: 'Back to work',
+    notificationError:
+      'Notifications have been denied, go to configuration to change the permissions',
   },
 } as const;
 

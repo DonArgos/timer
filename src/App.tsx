@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, useEffect} from 'react';
 import {StatusBar, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -10,13 +10,19 @@ import {useStyles} from './hooks/useStyles';
 import {Splash} from './screens/Splash';
 import {Settings} from './screens/Settings';
 import {RootSiblingParent} from 'react-native-root-siblings';
+import {useNotifications} from './hooks/useNotifications';
 
 const Stack = createNativeStackNavigator<MainStackParams>();
 
 export const App: FC = () => {
   const {backgroundStyle, isDarkMode, borderStyle, textStyle} = useStyles();
+  const {requestPermissions} = useNotifications();
 
   useAtomPreloader();
+
+  useEffect(() => {
+    requestPermissions(false);
+  }, [requestPermissions]);
 
   return (
     <RootSiblingParent>

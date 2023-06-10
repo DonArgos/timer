@@ -5,6 +5,7 @@ import {
   Image,
   Linking,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -13,13 +14,18 @@ import {useStyles} from '../hooks/useStyles';
 import {IconButton} from '../components/IconButton';
 import {TextButton} from '../components/TextButton';
 import {useLanguage} from '../hooks/useLanguage';
+import {useAtom} from 'jotai';
+import {notificationsAtom} from '../atoms/app';
+import {useNotifications} from '../hooks/useNotifications';
 
 type Props = MainStackScreenProps<Screens.Settings>;
 
 export const Settings: FC<Props> = ({navigation}) => {
   const {isDarkMode, toggleDarkMode, textStyle, tintStyle} = useStyles();
-
   const {language, toggleLanguage, label} = useLanguage();
+  const {requestPermissions} = useNotifications();
+
+  const [notifications, setNotifications] = useAtom(notificationsAtom);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,6 +50,21 @@ export const Settings: FC<Props> = ({navigation}) => {
           {language === 'ENG' ? 'ESP' : 'ENG'}
         </TextButton>
       </View>
+      <View style={styles.itemContainer}>
+        <Text style={[textStyle, styles.label]}>{label('notifications')}</Text>
+        <Switch
+          style={styles.switch}
+          value={notifications}
+          onValueChange={() =>
+            setNotifications(value => {
+              if (!value) {
+                requestPermissions();
+              }
+              return !value;
+            })
+          }
+        />
+      </View>
       <TouchableOpacity
         style={styles.github}
         onPress={() => Linking.openURL('https://github.com/DonArgos/timer')}>
@@ -65,13 +86,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
   },
   itemContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginLeft: 16,
+    marginTop: 16,
   },
   headerText: {
     fontSize: 16,
@@ -93,5 +113,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
     fontWeight: '700',
+  },
+  switch: {
+    marginRight: 16,
   },
 });

@@ -29,6 +29,7 @@ import {AnimationState, useAnimations} from './useAnimations';
 import {useAppState} from './useAppState';
 import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
 import {useLanguage} from './useLanguage';
+import {useNotifications} from './useNotifications';
 
 // 60 fps
 export const MS_PER_RENDER = 1000 / 60;
@@ -68,6 +69,7 @@ export const useTimerContext = () => {
   );
 
   const {label} = useLanguage();
+  const {scheduleNotifications} = useNotifications();
 
   const {animateIcon, iconAnimatedProps, playStyle, pauseStyle} =
     useAnimations();
@@ -237,13 +239,19 @@ export const useTimerContext = () => {
         });
         setRunning(false);
         setPreTimerRunning(false);
+
+        scheduleNotifications(
+          durationRef.current,
+          secondsRef.current,
+          secondsWorking.current,
+        );
         return;
       }
       deactivateKeepAwake();
       setRunning(false);
       setPreTimerRunning(false);
     },
-    [running, setPreTimerRunning, setTimerPauseData],
+    [running, scheduleNotifications, setPreTimerRunning, setTimerPauseData],
   );
 
   const onPlay = useCallback(
