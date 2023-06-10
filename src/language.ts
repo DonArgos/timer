@@ -15,7 +15,8 @@ export const language = {
     workDurationPositiveError: 'El tiempo de trabajo debe ser mayor a 0',
     restDurationInvalidError: 'Elige un tiempo de descanso válido',
     restDurationPositiveError: 'El tiempo de descanso debe ser mayor a 0',
-    changeLanguage: 'Cambiar lenguaje',
+    changeLanguage: 'Cambiar lenguaje, se reiniciará la aplicación',
+    settings: 'Configuración',
   },
   ENG: {
     totalDuration: 'Total duration',
@@ -33,7 +34,8 @@ export const language = {
     workDurationPositiveError: 'Work duration must be greater 0',
     restDurationInvalidError: 'Pick a valid rest duration',
     restDurationPositiveError: 'Rest duration must be greater 0',
-    changeLanguage: 'Change language',
+    changeLanguage: 'Change language, app will be restarted',
+    settings: 'Settings',
   },
 } as const;
 

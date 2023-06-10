@@ -1,7 +1,14 @@
 import React, {FC} from 'react';
 import {MainStackScreenProps, Screens} from './types';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {StyleSheet, Text, View} from 'react-native';
+import {
+  Image,
+  Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useStyles} from '../hooks/useStyles';
 import {IconButton} from '../components/IconButton';
 import {TextButton} from '../components/TextButton';
@@ -10,7 +17,7 @@ import {useLanguage} from '../hooks/useLanguage';
 type Props = MainStackScreenProps<Screens.Settings>;
 
 export const Settings: FC<Props> = ({navigation}) => {
-  const {isDarkMode, toggleDarkMode, textStyle} = useStyles();
+  const {isDarkMode, toggleDarkMode, textStyle, tintStyle} = useStyles();
 
   const {language, toggleLanguage, label} = useLanguage();
 
@@ -21,6 +28,7 @@ export const Settings: FC<Props> = ({navigation}) => {
           onPress={navigation.goBack}
           source={require('../assets/icons/arrow-left.png')}
         />
+        <Text style={[textStyle, styles.headerText]}>{label('settings')}</Text>
         <IconButton
           onPress={toggleDarkMode}
           source={
@@ -36,6 +44,15 @@ export const Settings: FC<Props> = ({navigation}) => {
           {language === 'ENG' ? 'ESP' : 'ENG'}
         </TextButton>
       </View>
+      <TouchableOpacity
+        style={styles.github}
+        onPress={() => Linking.openURL('https://github.com/DonArgos/timer')}>
+        <Image
+          source={require('../assets/icons/github.png')}
+          style={tintStyle}
+        />
+        <Text style={[textStyle, styles.githubText]}>DonArgos / timer</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -47,6 +64,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   itemContainer: {
     flexDirection: 'row',
@@ -54,7 +73,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 16,
   },
+  headerText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
   label: {
     fontSize: 16,
+    flex: 1,
+  },
+  github: {
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    marginTop: 'auto',
+    paddingVertical: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  githubText: {
+    fontSize: 16,
+    marginLeft: 8,
+    fontWeight: '700',
   },
 });
