@@ -14,9 +14,9 @@ export const darkModeAtom = atomWithStorage<DarkMode>(
   getStorage(),
 );
 
-export const languageAtom = atomWithStorage<Language>(
+export const languageAtom = atomWithStorage<Language | null>(
   'language',
-  'ESP',
+  null,
   getStorage(),
 );
 

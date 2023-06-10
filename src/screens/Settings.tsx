@@ -47,7 +47,7 @@ export const Settings: FC<Props> = ({navigation}) => {
       <View style={styles.itemContainer}>
         <Text style={[textStyle, styles.label]}>{label('changeLanguage')}</Text>
         <TextButton underline onPress={toggleLanguage}>
-          {language === 'ENG' ? 'ESP' : 'ENG'}
+          {language === 'en' ? 'ESP' : 'ENG'}
         </TextButton>
       </View>
       <View style={styles.itemContainer}>

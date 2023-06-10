@@ -1,28 +1,47 @@
 import {useAtom} from 'jotai';
 import {languageAtom} from '../atoms/app';
-import {useCallback} from 'react';
-import {Message, language} from '../language';
+import {useCallback, useMemo} from 'react';
+import {Language, Message, language} from '../language';
 import RNRestart from 'react-native-restart';
+import {getLocales} from 'react-native-localize';
 
 export const useLanguage = () => {
   const [lang, setLanguage] = useAtom(languageAtom);
 
+  const locale = useMemo(
+    () =>
+      getLocales().find(
+        item => item.languageCode === 'en' || item.languageCode === 'es',
+      ),
+    [],
+  );
+
   const toggleLanguage = () => {
     setLanguage(_lang => {
-      if (_lang === 'ENG') {
-        return 'ESP';
+      if (_lang === 'en') {
+        return 'es';
       }
-      return 'ENG';
+      return 'en';
     });
     RNRestart.restart();
   };
 
   const label = useCallback(
     (message: Message) => {
-      return language[lang][message];
+      if (lang) {
+        return language[lang][message];
+      }
+      if (!locale) {
+        return language.en[message];
+      }
+      return language[locale.languageCode as Language][message];
     },
-    [lang],
+    [lang, locale],
   );
 
-  return {toggleLanguage, label, language: lang};
+  return {
+    toggleLanguage,
+    label,
+    language: (lang || locale?.languageCode || 'en') as Language,
+  };
 };

@@ -1,5 +1,5 @@
 export const language = {
-  ESP: {
+  es: {
     totalDuration: 'Duración total',
     workDuration: 'Tiempo de trabajo',
     restDuration: 'Tiempo de descanso',
@@ -24,7 +24,7 @@ export const language = {
     notificationError:
       'Las notificaciones han sido rechazadas, ve a configuración para actualizar los permisos',
   },
-  ENG: {
+  en: {
     totalDuration: 'Total duration',
     workDuration: 'Work duration',
     restDuration: 'Rest duration',
@@ -53,4 +53,4 @@ export const language = {
 
 export type Language = keyof typeof language;
 
-export type Message = keyof (typeof language)['ESP'];
+export type Message = keyof (typeof language)['es'];
