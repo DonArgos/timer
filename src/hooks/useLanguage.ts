@@ -16,9 +16,14 @@ export const useLanguage = () => {
     [],
   );
 
+  const _language = useMemo(
+    () => (lang || locale?.languageCode || 'en') as Language,
+    [lang, locale?.languageCode],
+  );
+
   const toggleLanguage = () => {
-    setLanguage(_lang => {
-      if (_lang === 'en') {
+    setLanguage(() => {
+      if (_language === 'en') {
         return 'es';
       }
       return 'en';
@@ -42,6 +47,6 @@ export const useLanguage = () => {
   return {
     toggleLanguage,
     label,
-    language: (lang || locale?.languageCode || 'en') as Language,
+    language: _language,
   };
 };
