@@ -2,7 +2,7 @@ import React, {FC, useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Svg from 'react-native-svg';
 import {AnimatedCircle} from './Animated';
-import {useStyles} from '../hooks/useStyles';
+import {useStyles} from '../hooks/useStylesContext';
 import {useAnimatedProps, useDerivedValue} from 'react-native-reanimated';
 
 type Props = {

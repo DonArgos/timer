@@ -2,6 +2,7 @@ import {useAtom, useAtomValue} from 'jotai';
 import {
   createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -28,7 +29,7 @@ import {usePreTimer} from './usePreTimer';
 import {AnimationState, useAnimations} from './useAnimations';
 import {useAppState} from './useAppState';
 import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
-import {useLanguage} from './useLanguage';
+import {useLanguage} from './useLanguageContext';
 import {useNotifications} from './useNotifications';
 
 // 60 fps
@@ -39,6 +40,9 @@ export type TimerContextValues = ReturnType<typeof useTimerContext>;
 export const TimerContext = createContext<TimerContextValues | undefined>(
   undefined,
 );
+
+export const useTimer = () =>
+  useContext(TimerContext) || ({} as TimerContextValues);
 
 export const useTimerContext = () => {
   const interval = useRef<number>();

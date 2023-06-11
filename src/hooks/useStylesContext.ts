@@ -1,10 +1,19 @@
-import {useCallback, useMemo} from 'react';
+import {createContext, useCallback, useContext, useMemo} from 'react';
 import {useColorScheme, useWindowDimensions} from 'react-native';
 import {colors} from '../styles';
 import {useAtom} from 'jotai';
 import {DarkMode, darkModeAtom} from '../atoms/app';
 
-export const useStyles = () => {
+export type StylesContextValues = ReturnType<typeof useStylesContext>;
+
+export const StylesContext = createContext<StylesContextValues | undefined>(
+  undefined,
+);
+
+export const useStyles = () =>
+  useContext(StylesContext) || ({} as StylesContextValues);
+
+export const useStylesContext = () => {
   const colorScheme = useColorScheme();
   const [darkMode, setDarkMode] = useAtom(darkModeAtom);
   const isDarkMode = useMemo(

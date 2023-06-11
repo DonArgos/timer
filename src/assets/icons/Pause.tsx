@@ -1,6 +1,6 @@
 import React, {FC} from 'react';
 import {Path} from 'react-native-svg';
-import {useStyles} from '../../hooks/useStyles';
+import {useStyles} from '../../hooks/useStylesContext';
 import {AnimatedProps} from './types';
 import {AnimatedSvg} from '../../components/Animated';
 

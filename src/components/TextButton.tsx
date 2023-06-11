@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   TouchableOpacityProps,
 } from 'react-native';
-import {useStyles} from '../hooks/useStyles';
+import {useStyles} from '../hooks/useStylesContext';
 
 type Props = TouchableOpacityProps & {
   largeText?: boolean;

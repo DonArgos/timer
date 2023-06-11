@@ -4,7 +4,7 @@ import {getTimeUnits} from '../utils';
 import {Keyboard} from 'react-native';
 import {Durations, durationsSchema} from '../models/durations';
 import Toast from 'react-native-root-toast';
-import {useLanguage} from './useLanguage';
+import {useLanguage} from './useLanguageContext';
 import {Message} from '../language';
 
 type Props = {

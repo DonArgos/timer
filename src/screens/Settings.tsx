@@ -10,12 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {useStyles} from '../hooks/useStyles';
+import {useStyles} from '../hooks/useStylesContext';
 import {IconButton} from '../components/IconButton';
 import {TextButton} from '../components/TextButton';
-import {useLanguage} from '../hooks/useLanguage';
-import {useAtom} from 'jotai';
-import {notificationsAtom} from '../atoms/app';
+import {useLanguage} from '../hooks/useLanguageContext';
 import {useNotifications} from '../hooks/useNotifications';
 
 type Props = MainStackScreenProps<Screens.Settings>;
@@ -23,9 +21,12 @@ type Props = MainStackScreenProps<Screens.Settings>;
 export const Settings: FC<Props> = ({navigation}) => {
   const {isDarkMode, toggleDarkMode, textStyle, tintStyle} = useStyles();
   const {language, toggleLanguage, label} = useLanguage();
-  const {requestPermissions} = useNotifications();
-
-  const [notifications, setNotifications] = useAtom(notificationsAtom);
+  const {
+    toggleNotifications,
+    toggleNotificationsSound,
+    notifications,
+    notificationsSound,
+  } = useNotifications();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,14 +56,18 @@ export const Settings: FC<Props> = ({navigation}) => {
         <Switch
           style={styles.switch}
           value={notifications}
-          onValueChange={() =>
-            setNotifications(value => {
-              if (!value) {
-                requestPermissions();
-              }
-              return !value;
-            })
-          }
+          onValueChange={toggleNotifications}
+        />
+      </View>
+      <View style={styles.itemContainer}>
+        <Text style={[textStyle, styles.label]}>
+          {label('notificationsSound')}
+        </Text>
+        <Switch
+          style={styles.switch}
+          value={notificationsSound}
+          onValueChange={toggleNotificationsSound}
+          disabled={!notifications}
         />
       </View>
       <TouchableOpacity

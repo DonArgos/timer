@@ -1,4 +1,4 @@
-import React, {FC, useContext, useMemo} from 'react';
+import React, {FC, useMemo} from 'react';
 import Animated, {Layout} from 'react-native-reanimated';
 import {
   StyleProp,
@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
-import {useStyles} from '../hooks/useStyles';
+import {useStyles} from '../hooks/useStylesContext';
 import {FadeAnimatedText} from './FadeAnimatedText';
 import {Pause} from '../assets/icons/Pause';
 import {Play} from '../assets/icons/Play';
-import {TimerContext} from '../hooks/useTimerContext';
+import {useTimer} from '../hooks/useTimerContext';
 import {useAtomValue} from 'jotai';
 import {globalDurationAtom} from '../atoms/timer';
 import {ProgressCircle} from './ProgressCircle';
@@ -39,7 +39,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
     duration,
     timerPercentage,
     preTimerRunning,
-  } = useContext(TimerContext) || {};
+  } = useTimer();
 
   const largeSize = useMemo(() => width - 32 - LARGE_BORDER_WIDTH, [width]);
 

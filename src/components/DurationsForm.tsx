@@ -1,8 +1,8 @@
-import React, {FC, useContext} from 'react';
+import React, {FC} from 'react';
 import {FadeAnimatedView} from './FadeAnimatedView';
 import {Layout} from 'react-native-reanimated';
 import {StyleSheet, View} from 'react-native';
-import {TimerContext} from '../hooks/useTimerContext';
+import {useTimer} from '../hooks/useTimerContext';
 import {TextButton} from './TextButton';
 import {TextInput} from './TextInput';
 import {useAtom} from 'jotai';
@@ -11,7 +11,7 @@ import {
   restTimeModeAtom,
   workTimeModeAtom,
 } from '../atoms/timer';
-import {useLanguage} from '../hooks/useLanguage';
+import {useLanguage} from '../hooks/useLanguageContext';
 
 type Props = {
   layout: Layout;
@@ -25,7 +25,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
     setWorkText,
     restText,
     setRestText,
-  } = useContext(TimerContext) || {};
+  } = useTimer();
 
   const {label} = useLanguage();
 

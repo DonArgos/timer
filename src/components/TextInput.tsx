@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import {useStyles} from '../hooks/useStyles';
+import {useStyles} from '../hooks/useStylesContext';
 
 type Props = TextInputProps;
 

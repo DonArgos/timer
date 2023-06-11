@@ -1,11 +1,19 @@
 import {useAtom} from 'jotai';
 import {languageAtom} from '../atoms/app';
-import {useCallback, useMemo} from 'react';
+import {createContext, useCallback, useContext, useMemo} from 'react';
 import {Language, Message, language} from '../language';
-import RNRestart from 'react-native-restart';
 import {getLocales} from 'react-native-localize';
 
-export const useLanguage = () => {
+export type LanguageContextValues = ReturnType<typeof useLanguageContext>;
+
+export const LanguageContext = createContext<LanguageContextValues | undefined>(
+  undefined,
+);
+
+export const useLanguage = () =>
+  useContext(LanguageContext) || ({} as LanguageContextValues);
+
+export const useLanguageContext = () => {
   const [lang, setLanguage] = useAtom(languageAtom);
 
   const locale = useMemo(
@@ -28,7 +36,6 @@ export const useLanguage = () => {
       }
       return 'en';
     });
-    RNRestart.restart();
   };
 
   const label = useCallback(

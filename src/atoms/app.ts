@@ -25,3 +25,9 @@ export const notificationsAtom = atomWithStorage(
   true,
   getStorage(),
 );
+
+export const notificationsSoundAtom = atomWithStorage(
+  'notifications-sound',
+  true,
+  getStorage(),
+);

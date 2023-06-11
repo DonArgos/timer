@@ -3,7 +3,7 @@ import {Layout} from 'react-native-reanimated';
 import {StyleProp, ViewStyle} from 'react-native/types';
 import {FadeAnimatedView} from './FadeAnimatedView';
 import {IconButton} from './IconButton';
-import {useStyles} from '../hooks/useStyles';
+import {useStyles} from '../hooks/useStylesContext';
 
 type Props = {
   layout: Layout;

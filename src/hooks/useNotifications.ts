@@ -5,18 +5,22 @@ import {
   scheduleNotificationAsync,
 } from 'expo-notifications';
 import {useCallback} from 'react';
-import {useLanguage} from './useLanguage';
+import {useLanguage} from './useLanguageContext';
 import {calculateOcurrences} from '../utils';
 import {useAtom, useAtomValue} from 'jotai';
 import {restDurationAtom, workDurationAtom} from '../atoms/timer';
-import {notificationsAtom} from '../atoms/app';
+import {notificationsAtom, notificationsSoundAtom} from '../atoms/app';
 import Toast from 'react-native-root-toast';
+import {Message} from '../language';
 
 export const useNotifications = () => {
   const {label} = useLanguage();
   const workDuration = useAtomValue(workDurationAtom);
   const restDuration = useAtomValue(restDurationAtom);
   const [notifications, setNotifications] = useAtom(notificationsAtom);
+  const [notificationsSound, setNotificationsSound] = useAtom(
+    notificationsSoundAtom,
+  );
 
   const requestPermissions = useCallback(
     async (showMessage: boolean = true) => {
@@ -42,6 +46,19 @@ export const useNotifications = () => {
     [label, setNotifications],
   );
 
+  const schedule = useCallback(
+    (message: Message, timestamp: number) => {
+      scheduleNotificationAsync({
+        content: {
+          title: label(message),
+          sound: notificationsSound,
+        },
+        trigger: new Date(timestamp),
+      });
+    },
+    [label, notificationsSound],
+  );
+
   const scheduleNotifications = useCallback(
     (
       currentDuration: number,
@@ -54,20 +71,13 @@ export const useNotifications = () => {
 
       const now = Date.now();
       const finishedTimestamp = now + currentDuration;
-      scheduleNotificationAsync({
-        content: {
-          title: label('timerFinished'),
-        },
-        trigger: new Date(finishedTimestamp),
-      });
+      schedule('timerFinished', finishedTimestamp);
 
       let timerTimestamp = now + currentTimerDuration;
-      scheduleNotificationAsync({
-        content: {
-          title: label(isWorking ? 'workTimerFinished' : 'restTimerFinished'),
-        },
-        trigger: new Date(timerTimestamp),
-      });
+      schedule(
+        isWorking ? 'workTimerFinished' : 'restTimerFinished',
+        timerTimestamp,
+      );
 
       const {workOccurrences, restOccurrences} = calculateOcurrences(
         currentDuration,
@@ -80,21 +90,37 @@ export const useNotifications = () => {
         timerTimestamp =
           timerTimestamp + (isWorking ? workDuration : restDuration);
         if (timerTimestamp <= finishedTimestamp) {
-          scheduleNotificationAsync({
-            content: {
-              title: label(
-                isWorking ? 'workTimerFinished' : 'restTimerFinished',
-              ),
-            },
-            trigger: new Date(timerTimestamp),
-          });
+          schedule(
+            isWorking ? 'workTimerFinished' : 'restTimerFinished',
+            timerTimestamp,
+          );
         } else {
           break;
         }
       }
     },
-    [label, notifications, restDuration, workDuration],
+    [notifications, restDuration, schedule, workDuration],
   );
 
-  return {scheduleNotifications, requestPermissions};
+  const toggleNotifications = useCallback(() => {
+    setNotifications(value => {
+      if (!value) {
+        requestPermissions();
+      }
+      return !value;
+    });
+  }, [requestPermissions, setNotifications]);
+
+  const toggleNotificationsSound = useCallback(() => {
+    setNotificationsSound(value => !value);
+  }, [setNotificationsSound]);
+
+  return {
+    scheduleNotifications,
+    requestPermissions,
+    toggleNotifications,
+    toggleNotificationsSound,
+    notifications,
+    notificationsSound,
+  };
 };
