@@ -99,3 +99,11 @@ export const calculateOcurrences = (
     restOccurrences,
   };
 };
+
+export const validateNewDuration = (
+  durationText: string,
+): [number, boolean] => {
+  const duration = Number.parseInt(durationText, 10);
+  const validDuration = !Number.isNaN(duration) && duration > 0;
+  return [duration, validDuration];
+};

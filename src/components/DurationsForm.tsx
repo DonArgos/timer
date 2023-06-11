@@ -5,7 +5,7 @@ import {StyleSheet, View} from 'react-native';
 import {useTimer} from '../hooks/useTimerContext';
 import {TextButton} from './TextButton';
 import {TextInput} from './TextInput';
-import {useAtom} from 'jotai';
+import {useAtomValue} from 'jotai';
 import {
   globalTimeModeAtom,
   restTimeModeAtom,
@@ -25,13 +25,16 @@ export const DurationsForm: FC<Props> = ({layout}) => {
     setWorkText,
     restText,
     setRestText,
+    toggleGlobalTimeMode,
+    toggleWorkTimeMode,
+    toggleRestTimeMode,
   } = useTimer();
 
   const {label} = useLanguage();
 
-  const [globalTimeMode, setGlobalTimeMode] = useAtom(globalTimeModeAtom);
-  const [workTimeMode, setWorkTimeMode] = useAtom(workTimeModeAtom);
-  const [restTimeMode, setRestTimeMode] = useAtom(restTimeModeAtom);
+  const globalTimeMode = useAtomValue(globalTimeModeAtom);
+  const workTimeMode = useAtomValue(workTimeModeAtom);
+  const restTimeMode = useAtomValue(restTimeModeAtom);
 
   return (
     <FadeAnimatedView layout={layout}>
@@ -40,21 +43,14 @@ export const DurationsForm: FC<Props> = ({layout}) => {
           placeholder={label('totalDuration')}
           value={durationText}
           maxLength={9}
-          onChangeText={text => setDurationText?.(text)}
+          onChangeText={setDurationText}
           inputMode="decimal"
           style={styles.textInput}
         />
         <TextButton
           style={styles.button}
           underline
-          onPress={() =>
-            setGlobalTimeMode(value => {
-              if (value === 'minutes') {
-                return 'hours';
-              }
-              return 'minutes';
-            })
-          }>
+          onPress={toggleGlobalTimeMode}>
           {globalTimeMode === 'minutes'
             ? label('minutesTag')
             : label('hoursTag')}
@@ -65,21 +61,14 @@ export const DurationsForm: FC<Props> = ({layout}) => {
           placeholder={label('workDuration')}
           value={workText}
           maxLength={9}
-          onChangeText={text => setWorkText?.(text)}
+          onChangeText={setWorkText}
           inputMode="decimal"
           style={styles.textInput}
         />
         <TextButton
           style={styles.button}
           underline
-          onPress={() =>
-            setWorkTimeMode(value => {
-              if (value === 'minutes') {
-                return 'seconds';
-              }
-              return 'minutes';
-            })
-          }>
+          onPress={toggleWorkTimeMode}>
           {workTimeMode === 'minutes'
             ? label('minutesTag')
             : label('secondsTag')}
@@ -90,21 +79,14 @@ export const DurationsForm: FC<Props> = ({layout}) => {
           placeholder={label('restDuration')}
           value={restText}
           maxLength={9}
-          onChangeText={text => setRestText?.(text)}
+          onChangeText={setRestText}
           inputMode="decimal"
           style={styles.textInput}
         />
         <TextButton
           style={styles.button}
           underline
-          onPress={() =>
-            setRestTimeMode(value => {
-              if (value === 'minutes') {
-                return 'seconds';
-              }
-              return 'minutes';
-            })
-          }>
+          onPress={toggleRestTimeMode}>
           {restTimeMode === 'minutes'
             ? label('minutesTag')
             : label('secondsTag')}

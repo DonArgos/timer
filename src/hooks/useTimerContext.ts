@@ -1,4 +1,4 @@
-import {useAtom, useAtomValue} from 'jotai';
+import {useAtom} from 'jotai';
 import {
   createContext,
   useCallback,
@@ -20,6 +20,7 @@ import {
   getDurationText,
   getTimeUnits,
   getTimerAndTag,
+  validateNewDuration,
 } from '../utils';
 import {Durations, durationsSchema} from '../models/durations';
 import {globalTimeModeAtom} from '../atoms/timer';
@@ -52,9 +53,9 @@ export const useTimerContext = () => {
   const [restDuration, setRestDuration] = useAtom(restDurationAtom);
   const [timerPauseData, setTimerPauseData] = useAtom(timerPauseDataAtom);
 
-  const globalTimeMode = useAtomValue(globalTimeModeAtom);
-  const workTimeMode = useAtomValue(workTimeModeAtom);
-  const restTimeMode = useAtomValue(restTimeModeAtom);
+  const [globalTimeMode, setGlobalTimeMode] = useAtom(globalTimeModeAtom);
+  const [workTimeMode, setWorkTimeMode] = useAtom(workTimeModeAtom);
+  const [restTimeMode, setRestTimeMode] = useAtom(restTimeModeAtom);
 
   const [stopped, setStopped] = useState(true);
   const [running, setRunning] = useState(false);
@@ -381,6 +382,60 @@ export const useTimerContext = () => {
     setDuration(globalDuration);
   }, [animateIcon, globalDuration, resetValues, setTimerPauseData]);
 
+  const toggleGlobalTimeMode = useCallback(() => {
+    setGlobalTimeMode(value => {
+      const [_duration, validDuration] = validateNewDuration(durationText);
+      if (value === 'minutes') {
+        setGlobalDuration(_value => {
+          const newDuration = validDuration
+            ? _duration * 1000 * 60 * 60
+            : _value * 60;
+          setDuration(newDuration);
+          return newDuration;
+        });
+        return 'hours';
+      }
+      setGlobalDuration(_value => {
+        const newDuration = validDuration ? _duration * 1000 * 60 : _value / 60;
+        setDuration(newDuration);
+        return newDuration;
+      });
+      return 'minutes';
+    });
+  }, [durationText, setGlobalDuration, setGlobalTimeMode]);
+
+  const toggleWorkTimeMode = useCallback(() => {
+    setWorkTimeMode(value => {
+      const [_duration, validDuration] = validateNewDuration(workText);
+      if (value === 'minutes') {
+        setWorkDuration(_value =>
+          validDuration ? _duration * 1000 : _value / 60,
+        );
+        return 'seconds';
+      }
+      setWorkDuration(_value =>
+        validDuration ? _duration * 1000 * 60 : _value * 60,
+      );
+      return 'minutes';
+    });
+  }, [setWorkDuration, setWorkTimeMode, workText]);
+
+  const toggleRestTimeMode = useCallback(() => {
+    setRestTimeMode(value => {
+      const [_duration, validDuration] = validateNewDuration(restText);
+      if (value === 'minutes') {
+        setRestDuration(_value =>
+          validDuration ? _duration * 1000 : _value / 60,
+        );
+        return 'seconds';
+      }
+      setRestDuration(_value =>
+        validDuration ? _duration * 1000 * 60 : _value * 60,
+      );
+      return 'minutes';
+    });
+  }, [restText, setRestDuration, setRestTimeMode]);
+
   return {
     stopped,
     durationText,
@@ -407,5 +462,8 @@ export const useTimerContext = () => {
     preTimerRunning,
     preTimer,
     preTimerDuration,
+    toggleGlobalTimeMode,
+    toggleWorkTimeMode,
+    toggleRestTimeMode,
   };
 };
