@@ -52,7 +52,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
     <Animated.View layout={layout} style={styles.container}>
       <TouchableOpacity
         style={[styles.button, {width: largeSize, height: largeSize}, style]}
-        onPress={() => onPlay?.()}
+        onPress={() => onPlay()}
         disabled={(duration || 0) <= 0 || preTimerRunning}>
         <ProgressCircle
           size={largeSize}

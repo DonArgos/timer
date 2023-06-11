@@ -15,6 +15,8 @@ import {IconButton} from '../components/IconButton';
 import {TextButton} from '../components/TextButton';
 import {useLanguage} from '../hooks/useLanguageContext';
 import {useNotifications} from '../hooks/useNotifications';
+import {useAtom} from 'jotai';
+import {preTimerEnabledAtom} from '../atoms/app';
 
 type Props = MainStackScreenProps<Screens.Settings>;
 
@@ -24,9 +26,11 @@ export const Settings: FC<Props> = ({navigation}) => {
   const {
     toggleNotifications,
     toggleNotificationsSound,
-    notifications,
-    notificationsSound,
+    notificationsEnabled,
+    notificationsSoundEnabled,
   } = useNotifications();
+
+  const [preTimerEnabled, setPreTimerEnabled] = useAtom(preTimerEnabledAtom);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,16 +50,18 @@ export const Settings: FC<Props> = ({navigation}) => {
         />
       </View>
       <View style={styles.itemContainer}>
-        <Text style={[textStyle, styles.label]}>{label('changeLanguage')}</Text>
-        <TextButton underline onPress={toggleLanguage}>
-          {language === 'en' ? 'ESP' : 'ENG'}
-        </TextButton>
+        <Text style={[textStyle, styles.label]}>{label('preTimer')}</Text>
+        <Switch
+          style={styles.switch}
+          value={preTimerEnabled}
+          onValueChange={setPreTimerEnabled}
+        />
       </View>
       <View style={styles.itemContainer}>
         <Text style={[textStyle, styles.label]}>{label('notifications')}</Text>
         <Switch
           style={styles.switch}
-          value={notifications}
+          value={notificationsEnabled}
           onValueChange={toggleNotifications}
         />
       </View>
@@ -65,10 +71,16 @@ export const Settings: FC<Props> = ({navigation}) => {
         </Text>
         <Switch
           style={styles.switch}
-          value={notificationsSound}
+          value={notificationsSoundEnabled}
           onValueChange={toggleNotificationsSound}
-          disabled={!notifications}
+          disabled={!notificationsEnabled}
         />
+      </View>
+      <View style={styles.itemContainer}>
+        <Text style={[textStyle, styles.label]}>{label('changeLanguage')}</Text>
+        <TextButton underline onPress={toggleLanguage}>
+          {language === 'en' ? 'ESP' : 'ENG'}
+        </TextButton>
       </View>
       <TouchableOpacity
         style={styles.github}

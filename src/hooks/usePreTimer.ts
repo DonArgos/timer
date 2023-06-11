@@ -1,28 +1,13 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {MS_PER_RENDER} from './useTimerContext';
 import {getTimeUnits} from '../utils';
-import {Keyboard} from 'react-native';
-import {Durations, durationsSchema} from '../models/durations';
-import Toast from 'react-native-root-toast';
-import {useLanguage} from './useLanguageContext';
-import {Message} from '../language';
 
 type Props = {
   play: () => void;
-  durationText: string;
-  workText: string;
-  restText: string;
 };
 
-export const usePreTimer = ({
-  play,
-  durationText,
-  workText,
-  restText,
-}: Props) => {
+export const usePreTimer = ({play}: Props) => {
   const interval = useRef<number>();
-
-  const {label} = useLanguage();
 
   const [running, setRunning] = useState(false);
   const [duration, setDuration] = useState(5000);
@@ -53,21 +38,8 @@ export const usePreTimer = ({
   const timer = useMemo(() => getTimeUnits(duration)._seconds + 1, [duration]);
 
   const start = useCallback(() => {
-    Keyboard.dismiss();
-    const data: Durations = {
-      global: Number.parseInt(durationText, 10),
-      work: Number.parseInt(workText, 10),
-      rest: Number.parseInt(restText, 10),
-    };
-    const result = durationsSchema.safeParse(data);
-
-    if (!result.success) {
-      Toast.show(label(result.error.errors[0].message as Message));
-      return;
-    }
-
     setRunning(true);
-  }, [durationText, label, restText, workText]);
+  }, []);
 
   return {
     preTimerDuration: duration,

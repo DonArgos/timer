@@ -9,7 +9,10 @@ import {useLanguage} from './useLanguageContext';
 import {calculateOcurrences} from '../utils';
 import {useAtom, useAtomValue} from 'jotai';
 import {restDurationAtom, workDurationAtom} from '../atoms/timer';
-import {notificationsAtom, notificationsSoundAtom} from '../atoms/app';
+import {
+  notificationsEnabledAtom,
+  notificationsSoundEnabledAtom,
+} from '../atoms/app';
 import Toast from 'react-native-root-toast';
 import {Message} from '../language';
 
@@ -17,9 +20,11 @@ export const useNotifications = () => {
   const {label} = useLanguage();
   const workDuration = useAtomValue(workDurationAtom);
   const restDuration = useAtomValue(restDurationAtom);
-  const [notifications, setNotifications] = useAtom(notificationsAtom);
-  const [notificationsSound, setNotificationsSound] = useAtom(
-    notificationsSoundAtom,
+  const [notificationsEnabled, setNotificationsEnabled] = useAtom(
+    notificationsEnabledAtom,
+  );
+  const [notificationsSoundEnabled, setNotificationsSoundEnabled] = useAtom(
+    notificationsSoundEnabledAtom,
   );
 
   const requestPermissions = useCallback(
@@ -31,19 +36,19 @@ export const useNotifications = () => {
 
       if (settings.ios?.status === IosAuthorizationStatus.DENIED) {
         showMessage && Toast.show(label('notificationError'));
-        setNotifications(false);
+        setNotificationsEnabled(false);
         return;
       }
 
       if (!hasPermission) {
         const _settings = await requestPermissionsAsync();
-        setNotifications(
+        setNotificationsEnabled(
           _settings.granted ||
             _settings.ios?.status === IosAuthorizationStatus.PROVISIONAL,
         );
       }
     },
-    [label, setNotifications],
+    [label, setNotificationsEnabled],
   );
 
   const schedule = useCallback(
@@ -51,12 +56,12 @@ export const useNotifications = () => {
       scheduleNotificationAsync({
         content: {
           title: label(message),
-          sound: notificationsSound,
+          sound: notificationsSoundEnabled,
         },
         trigger: new Date(timestamp),
       });
     },
-    [label, notificationsSound],
+    [label, notificationsSoundEnabled],
   );
 
   const scheduleNotifications = useCallback(
@@ -65,7 +70,7 @@ export const useNotifications = () => {
       currentTimerDuration: number,
       isWorking: boolean,
     ) => {
-      if (!notifications) {
+      if (!notificationsEnabled) {
         return;
       }
 
@@ -99,28 +104,28 @@ export const useNotifications = () => {
         }
       }
     },
-    [notifications, restDuration, schedule, workDuration],
+    [notificationsEnabled, restDuration, schedule, workDuration],
   );
 
   const toggleNotifications = useCallback(() => {
-    setNotifications(value => {
+    setNotificationsEnabled(value => {
       if (!value) {
         requestPermissions();
       }
       return !value;
     });
-  }, [requestPermissions, setNotifications]);
+  }, [requestPermissions, setNotificationsEnabled]);
 
   const toggleNotificationsSound = useCallback(() => {
-    setNotificationsSound(value => !value);
-  }, [setNotificationsSound]);
+    setNotificationsSoundEnabled(value => !value);
+  }, [setNotificationsSoundEnabled]);
 
   return {
     scheduleNotifications,
     requestPermissions,
     toggleNotifications,
     toggleNotificationsSound,
-    notifications,
-    notificationsSound,
+    notificationsEnabled,
+    notificationsSoundEnabled,
   };
 };

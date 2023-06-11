@@ -5,12 +5,6 @@ import {StyleSheet, View} from 'react-native';
 import {useTimer} from '../hooks/useTimerContext';
 import {TextButton} from './TextButton';
 import {TextInput} from './TextInput';
-import {useAtomValue} from 'jotai';
-import {
-  globalTimeModeAtom,
-  restTimeModeAtom,
-  workTimeModeAtom,
-} from '../atoms/timer';
 import {useLanguage} from '../hooks/useLanguageContext';
 
 type Props = {
@@ -28,13 +22,12 @@ export const DurationsForm: FC<Props> = ({layout}) => {
     toggleGlobalTimeMode,
     toggleWorkTimeMode,
     toggleRestTimeMode,
+    globalTimeMode,
+    workTimeMode,
+    restTimeMode,
   } = useTimer();
 
   const {label} = useLanguage();
-
-  const globalTimeMode = useAtomValue(globalTimeModeAtom);
-  const workTimeMode = useAtomValue(workTimeModeAtom);
-  const restTimeMode = useAtomValue(restTimeModeAtom);
 
   return (
     <FadeAnimatedView layout={layout}>

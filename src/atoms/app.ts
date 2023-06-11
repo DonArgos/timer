@@ -20,14 +20,20 @@ export const languageAtom = atomWithStorage<Language | null>(
   getStorage(),
 );
 
-export const notificationsAtom = atomWithStorage(
-  'notifications',
+export const notificationsEnabledAtom = atomWithStorage(
+  'notifications-enabled',
   true,
   getStorage(),
 );
 
-export const notificationsSoundAtom = atomWithStorage(
-  'notifications-sound',
+export const notificationsSoundEnabledAtom = atomWithStorage(
+  'notifications-sound-enabled',
+  true,
+  getStorage(),
+);
+
+export const preTimerEnabledAtom = atomWithStorage(
+  'pre-timer-enabled',
   true,
   getStorage(),
 );

@@ -24,6 +24,7 @@ export const language = {
     restTimerFinished: 'Volver a trabajar',
     notificationError:
       'Las notificaciones han sido rechazadas, ve a configuración para actualizar los permisos',
+    preTimer: 'Iniciar con pre-contador',
   },
   en: {
     totalDuration: 'Total duration',
@@ -50,9 +51,10 @@ export const language = {
     restTimerFinished: 'Back to work',
     notificationError:
       'Notifications have been denied, go to configuration to change the permissions',
+    preTimer: 'Start with pre-timer',
   },
 } as const;
 
 export type Language = keyof typeof language;
 
-export type Message = keyof (typeof language)['es'];
+export type Message = keyof (typeof language)[Language];

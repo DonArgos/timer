@@ -1,4 +1,4 @@
-import {useAtom} from 'jotai';
+import {useAtom, useAtomValue} from 'jotai';
 import {
   createContext,
   useCallback,
@@ -32,6 +32,10 @@ import {useAppState} from './useAppState';
 import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
 import {useLanguage} from './useLanguageContext';
 import {useNotifications} from './useNotifications';
+import {preTimerEnabledAtom} from '../atoms/app';
+import {Keyboard} from 'react-native';
+import Toast from 'react-native-root-toast';
+import {Message} from '../language';
 
 // 60 fps
 export const MS_PER_RENDER = 1000 / 60;
@@ -56,6 +60,8 @@ export const useTimerContext = () => {
   const [globalTimeMode, setGlobalTimeMode] = useAtom(globalTimeModeAtom);
   const [workTimeMode, setWorkTimeMode] = useAtom(workTimeModeAtom);
   const [restTimeMode, setRestTimeMode] = useAtom(restTimeModeAtom);
+
+  const preTimerEnabled = useAtomValue(preTimerEnabledAtom);
 
   const [stopped, setStopped] = useState(true);
   const [running, setRunning] = useState(false);
@@ -226,12 +232,7 @@ export const useTimerContext = () => {
     setPreTimerRunning,
     startPreTimer,
     preTimerRunning,
-  } = usePreTimer({
-    play,
-    durationText,
-    restText,
-    workText,
-  });
+  } = usePreTimer({play});
 
   const onPause = useCallback(
     (fromBackground: boolean = false) => {
@@ -298,7 +299,24 @@ export const useTimerContext = () => {
         return;
       }
       if (stopped) {
-        startPreTimer();
+        Keyboard.dismiss();
+        const data: Durations = {
+          global: Number.parseInt(durationText, 10),
+          work: Number.parseInt(workText, 10),
+          rest: Number.parseInt(restText, 10),
+        };
+        const result = durationsSchema.safeParse(data);
+
+        if (!result.success) {
+          Toast.show(label(result.error.errors[0].message as Message));
+          return;
+        }
+
+        if (preTimerEnabled) {
+          startPreTimer();
+        } else {
+          play();
+        }
       } else {
         toggleTimer();
       }
@@ -312,7 +330,13 @@ export const useTimerContext = () => {
       restDuration,
       animateIcon,
       setTimerPauseData,
+      durationText,
+      workText,
+      restText,
+      preTimerEnabled,
+      label,
       startPreTimer,
+      play,
       toggleTimer,
     ],
   );
@@ -465,5 +489,8 @@ export const useTimerContext = () => {
     toggleGlobalTimeMode,
     toggleWorkTimeMode,
     toggleRestTimeMode,
+    globalTimeMode,
+    workTimeMode,
+    restTimeMode,
   };
 };

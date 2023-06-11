@@ -8,7 +8,13 @@ import {
   workDurationAtom,
   workTimeModeAtom,
 } from './timer';
-import {darkModeAtom, languageAtom} from './app';
+import {
+  darkModeAtom,
+  languageAtom,
+  notificationsEnabledAtom,
+  notificationsSoundEnabledAtom,
+  preTimerEnabledAtom,
+} from './app';
 
 export const useAtomPreloader = () => {
   useAtom(globalDurationAtom);
@@ -20,4 +26,7 @@ export const useAtomPreloader = () => {
   useAtom(darkModeAtom);
   useAtom(timerPauseDataAtom);
   useAtom(languageAtom);
+  useAtom(notificationsEnabledAtom);
+  useAtom(notificationsSoundEnabledAtom);
+  useAtom(preTimerEnabledAtom);
 };
