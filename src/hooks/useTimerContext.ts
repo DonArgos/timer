@@ -27,7 +27,7 @@ import {globalTimeModeAtom} from '../atoms/timer';
 import {workTimeModeAtom} from '../atoms/timer';
 import {restTimeModeAtom} from '../atoms/timer';
 import {usePreTimer} from './usePreTimer';
-import {AnimationState, useAnimations} from './useAnimations';
+import {useAnimations} from './useAnimations';
 import {useAppState} from './useAppState';
 import {activateKeepAwakeAsync, deactivateKeepAwake} from 'expo-keep-awake';
 import {useLanguage} from './useLanguageContext';
@@ -82,8 +82,7 @@ export const useTimerContext = () => {
   const {label} = useLanguage();
   const {scheduleNotifications} = useNotifications();
 
-  const {animateIcon, iconAnimatedProps, playStyle, pauseStyle} =
-    useAnimations();
+  const {iconAnimatedProps, playStyle, pauseStyle} = useAnimations(stopped);
 
   const percentageRef = useRef(workDuration);
   const secondsRef = useRef(workDuration);
@@ -152,12 +151,7 @@ export const useTimerContext = () => {
   }, [restDuration, workDuration, duration, running, stopped]);
 
   const toggleTimer = useCallback(() => {
-    setStopped(value => {
-      if (value) {
-        animateIcon(AnimationState.FINISH);
-      }
-      return false;
-    });
+    setStopped(false);
     setRunning(value => {
       if (value) {
         deactivateKeepAwake();
@@ -166,7 +160,7 @@ export const useTimerContext = () => {
       }
       return !value;
     });
-  }, [animateIcon]);
+  }, []);
 
   const globalMultiplier = useMemo(() => {
     if (globalTimeMode === 'minutes') {
@@ -208,13 +202,11 @@ export const useTimerContext = () => {
       if (value) {
         percentageRef.current = result.work * workMultiplier;
         secondsRef.current = result.work * workMultiplier;
-        animateIcon(AnimationState.FINISH);
       }
       return false;
     });
     setRunning(value => !value);
   }, [
-    animateIcon,
     durationText,
     globalMultiplier,
     restMultiplier,
@@ -285,8 +277,6 @@ export const useTimerContext = () => {
           secondsWorking.current = working;
           percentageWorking.current = working;
 
-          animateIcon(AnimationState.FINISH);
-
           setDuration(newDuration);
           setStopped(false);
           setRunning(true);
@@ -328,7 +318,6 @@ export const useTimerContext = () => {
       setPreTimerRunning,
       workDuration,
       restDuration,
-      animateIcon,
       setTimerPauseData,
       durationText,
       workText,
@@ -380,31 +369,23 @@ export const useTimerContext = () => {
   const onReset = useCallback(() => {
     resetValues();
     previousRunning.current = !previousRunning.current;
-    animateIcon(AnimationState.START);
 
     setTimerPauseData(null);
     setDuration(globalDuration);
     setRunning(false);
     setPreTimerRunning(true);
     setStopped(true);
-  }, [
-    animateIcon,
-    globalDuration,
-    resetValues,
-    setPreTimerRunning,
-    setTimerPauseData,
-  ]);
+  }, [globalDuration, resetValues, setPreTimerRunning, setTimerPauseData]);
 
   const onStop = useCallback(() => {
     resetValues();
-    animateIcon(AnimationState.START);
 
     deactivateKeepAwake();
     setTimerPauseData(null);
     setStopped(true);
     setRunning(false);
     setDuration(globalDuration);
-  }, [animateIcon, globalDuration, resetValues, setTimerPauseData]);
+  }, [globalDuration, resetValues, setTimerPauseData]);
 
   const toggleGlobalTimeMode = useCallback(() => {
     setGlobalTimeMode(value => {

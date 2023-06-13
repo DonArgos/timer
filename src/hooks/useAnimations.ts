@@ -1,30 +1,19 @@
-import {useCallback} from 'react';
 import {
   Easing,
   interpolate,
   useAnimatedProps,
   useAnimatedStyle,
-  useSharedValue,
+  useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
 
-export enum AnimationState {
-  START,
-  FINISH,
-}
-
-export const useAnimations = () => {
-  const iconSize = useSharedValue(1);
-
-  const animateIcon = useCallback(
-    (state: AnimationState) => {
-      if (state === AnimationState.START) {
-        iconSize.value = withTiming(1, {duration: 300, easing: Easing.linear});
-      } else {
-        iconSize.value = withTiming(0, {duration: 200, easing: Easing.linear});
-      }
-    },
-    [iconSize],
+export const useAnimations = (stopped: boolean) => {
+  const iconSize = useDerivedValue(
+    () =>
+      stopped
+        ? withTiming(1, {duration: 300, easing: Easing.linear})
+        : withTiming(0, {duration: 200, easing: Easing.linear}),
+    [stopped],
   );
 
   const iconAnimatedProps = useAnimatedProps(() => ({
@@ -49,5 +38,5 @@ export const useAnimations = () => {
     ],
   }));
 
-  return {animateIcon, iconAnimatedProps, playStyle, pauseStyle};
+  return {iconAnimatedProps, playStyle, pauseStyle};
 };
