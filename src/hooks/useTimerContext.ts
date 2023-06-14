@@ -50,7 +50,7 @@ export const useTimer = () =>
   useContext(TimerContext) || ({} as TimerContextValues);
 
 export const useTimerContext = () => {
-  const interval = useRef<number>();
+  const interval = useRef<NodeJS.Timer>();
 
   const [globalDuration, setGlobalDuration] = useAtom(globalDurationAtom);
   const [workDuration, setWorkDuration] = useAtom(workDurationAtom);
@@ -441,6 +441,16 @@ export const useTimerContext = () => {
     });
   }, [restText, setRestDuration, setRestTimeMode]);
 
+  const enableTestMode = useCallback(() => {
+    if (__DEV__) {
+      durationRef.current = 1000 * 60 * 12.5;
+      percentageRef.current = 10000;
+      secondsRef.current = 10000;
+      setStopped(false);
+      setDuration(1000 * 60 * 12.5);
+    }
+  }, []);
+
   return {
     stopped,
     durationText,
@@ -473,5 +483,6 @@ export const useTimerContext = () => {
     globalTimeMode,
     workTimeMode,
     restTimeMode,
+    enableTestMode,
   };
 };

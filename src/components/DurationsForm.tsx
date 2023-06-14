@@ -39,6 +39,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
           onChangeText={setDurationText}
           inputMode="decimal"
           style={styles.textInput}
+          testID="total-duration-input"
         />
         <TextButton
           style={styles.button}
@@ -57,6 +58,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
           onChangeText={setWorkText}
           inputMode="decimal"
           style={styles.textInput}
+          testID="work-duration-input"
         />
         <TextButton
           style={styles.button}
@@ -75,6 +77,7 @@ export const DurationsForm: FC<Props> = ({layout}) => {
           onChangeText={setRestText}
           inputMode="decimal"
           style={styles.textInput}
+          testID="rest-duration-input"
         />
         <TextButton
           style={styles.button}

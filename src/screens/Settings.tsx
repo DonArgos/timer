@@ -36,11 +36,13 @@ export const Settings: FC<Props> = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <IconButton
+          testId="back-button"
           onPress={navigation.goBack}
           source={require('../assets/icons/arrow-left.png')}
         />
         <Text style={[textStyle, styles.headerText]}>{label('settings')}</Text>
         <IconButton
+          testId={`style-button-${isDarkMode ? 'dark' : 'light'}`}
           onPress={toggleDarkMode}
           source={
             isDarkMode
@@ -77,8 +79,12 @@ export const Settings: FC<Props> = ({navigation}) => {
         />
       </View>
       <View style={styles.itemContainer}>
-        <Text style={[textStyle, styles.label]}>{label('changeLanguage')}</Text>
-        <TextButton underline onPress={toggleLanguage}>
+        <Text
+          style={[textStyle, styles.label]}
+          testID={`language-label-${language}`}>
+          {label('changeLanguage')}
+        </Text>
+        <TextButton underline onPress={toggleLanguage} testID="language-button">
           {language === 'en' ? 'ESP' : 'ENG'}
         </TextButton>
       </View>

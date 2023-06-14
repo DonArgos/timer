@@ -51,6 +51,7 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
   return (
     <Animated.View layout={layout} style={styles.container}>
       <TouchableOpacity
+        testID="play-button"
         style={[styles.button, {width: largeSize, height: largeSize}, style]}
         onPress={() => onPlay()}
         disabled={(duration || 0) <= 0 || preTimerRunning}>
@@ -65,7 +66,10 @@ export const PlayButton: FC<Props> = ({layout, style}) => {
           borderWidth={SMALL_BORDER_WIDTH}
         />
         {!stopped && (
-          <FadeAnimatedText style={[styles.text, textStyle]} layout={layout}>
+          <FadeAnimatedText
+            testID={`play-button-text-${timer}`}
+            style={[styles.text, textStyle]}
+            layout={layout}>
             {timer}
             <Text style={styles.timeTag}> {timeTag}</Text>
           </FadeAnimatedText>

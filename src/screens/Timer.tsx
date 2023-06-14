@@ -40,6 +40,7 @@ export const Timer: FC<Props> = ({navigation}) => {
     preTimerRunning,
     preTimer,
     preTimerDuration,
+    enableTestMode,
   } = timerContext;
 
   const layout = useMemo(() => new Layout(), []);
@@ -88,6 +89,8 @@ export const Timer: FC<Props> = ({navigation}) => {
                   layout={layout}
                   style={styles.settingsContainer}>
                   <IconButton
+                    testId="settings-button"
+                    onLongPress={__DEV__ ? enableTestMode : undefined}
                     onPress={() => {
                       setTimeout(() => {
                         setRenderScreen(false);
@@ -112,7 +115,11 @@ export const Timer: FC<Props> = ({navigation}) => {
                 <TextButton style={styles.reset} onPress={onReset} largeText>
                   {label('restartButton')}
                 </TextButton>
-                <TextButton style={styles.stop} onPress={onStop} largeText>
+                <TextButton
+                  testID="stop-button"
+                  style={styles.stop}
+                  onPress={onStop}
+                  largeText>
                   {label('stopButton')}
                 </TextButton>
               </FadeAnimatedView>
