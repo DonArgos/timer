@@ -1,0 +1,39 @@
+before_all do
+  ensure_git_branch(branch: 'main')
+  ensure_git_status_clean
+  git_pull
+end
+
+platform :ios do
+  private_lane :update_version do
+    app_store_version = get_app_store_version_number(bundle_id: 'Timer')
+    plist_version = get_version_number(xcodeproj: './ios/Timer.xcodeproj')
+    if Gem::Version.new(plist_version.to_f) == Gem::Version.new(app_store_version.to_f)
+      UI.message "bumping minor number"
+      increment_version_number(xcodeproj: './ios/Timer.xcodeproj', bump_type: 'minor')
+    else
+      UI.message "bumping patch number"
+      increment_version_number(xcodeproj: './ios/Timer.xcodeproj', bump_type: 'patch')
+    end
+  end
+
+  private_lane :staging_build do
+    update_version
+    increment_build_number(xcodeproj: './ios/Timer.xcodeproj')
+    gym(scheme: 'Timer', workspace: './ios/Timer.xcworkspace')
+  end
+
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    app_store_connect_api_key(
+      key_id: "SOME_ID",
+      issuer_id: "SOME_ID",
+      key_filepath: "KEY_PATH"
+    )
+
+    staging_build
+    upload_to_testflight
+    commit_version_bump(message: 'Version Bump', xcodeproj: './ios/Timer.xcodeproj')
+    push_to_git_remote
+  end
+end
